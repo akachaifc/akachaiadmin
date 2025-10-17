@@ -345,6 +345,38 @@
                     </div>
                 </div>
 
+                <!-- Jersey Orders Content -->
+                <div id="jersey-orders-content" class="content-section">
+                    <div class="bg-card p-6 rounded-lg mb-6">
+                        <h3 class="text-xl font-bold mb-4">Add New Jersey Order</h3>
+                        <form id="jersey-order-form" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+                            <div>
+                                <label>Customer Name</label>
+                                <input id="customer-name" type="text" class="w-full p-2 bg-gray-700 rounded" required>
+                            </div>
+                            <div>
+                                <label>Phone Number</label>
+                                <input id="customer-phone" type="tel" class="w-full p-2 bg-gray-700 rounded" required>
+                            </div>
+                             <div>
+                                <label>Jersey Size</label>
+                                <select id="jersey-size" class="w-full p-2 bg-gray-700 rounded">
+                                    <option>Small</option>
+                                    <option>Medium</option>
+                                    <option>Large</option>
+                                    <option>XL</option>
+                                    <option>XXL</option>
+                                </select>
+                            </div>
+                             <button type="submit" class="bg-gold text-black font-bold py-2 px-4 rounded-md hover-bg-gold-dark">Place Order</button>
+                        </form>
+                    </div>
+                    <h2 class="text-2xl font-semibold mb-4">Manage Jersey Orders</h2>
+                    <div id="jersey-orders-list" class="bg-card p-4 rounded-lg">
+                        <!-- Jersey orders will be dynamically added here -->
+                    </div>
+                </div>
+
             </div>
         </div>
     </main>
@@ -374,7 +406,8 @@
             query,
             orderBy,
             Timestamp,
-            where
+            where,
+            runTransaction
         } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         // --- PLACEHOLDERS & CONFIG ---
@@ -446,6 +479,10 @@
             } else {
                 document.getElementById('dashboard-content').classList.add('active');
                 document.getElementById('page-title').textContent = 'Dashboard';
+            }
+            // Load social media form data if navigating to that page
+            if (pageId === 'social-media-content') {
+                loadSocialMediaFormData();
             }
         };
 
@@ -582,6 +619,7 @@
             if (['admin', 'treasurer', 'treasury_staff'].includes(currentUserRole)) {
                 navLinks += `<a href="#" data-page="finances-content" class="nav-link block py-2 px-4 rounded hover:bg-gray-700"><i class="fas fa-coins w-6"></i> Finances</a>`;
                 navLinks += `<a href="#" data-page="receipts-content" class="nav-link block py-2 px-4 rounded hover:bg-gray-700"><i class="fas fa-receipt w-6"></i> Issue Receipts</a>`;
+                navLinks += `<a href="#" data-page="jersey-orders-content" class="nav-link block py-2 px-4 rounded hover:bg-gray-700"><i class="fas fa-tshirt w-6"></i> Jersey Orders</a>`;
             }
             
             const isSocialMediaManager = currentUserRole.startsWith('social_media');
@@ -608,6 +646,7 @@
 
             if (['admin', 'treasurer', 'treasury_staff'].includes(currentUserRole)) {
                 listenForTransactions();
+                listenForJerseyOrders();
             }
             if (currentUserRole === 'admin') {
                 listenForUsers();
@@ -742,6 +781,7 @@
             document.getElementById('chat-form').onsubmit = handleChatSubmit;
             document.getElementById('add-user-form').onsubmit = handleAddUserSubmit;
             document.getElementById('social-media-form').onsubmit = handleSocialMediaSubmit;
+            document.getElementById('jersey-order-form').onsubmit = handleJerseyOrderSubmit;
         }
 
         // --- MODULE LOGIC (Requisitions, Finances, Chat etc.) ---
@@ -920,59 +960,37 @@
             const securityCode = `SEC-${crypto.randomUUID()}`;
 
             try {
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF();
-
-                doc.setFillColor(18, 18, 18);
-                doc.rect(0, 0, 210, 297, 'F');
-                doc.setTextColor(212, 175, 55);
-                doc.setFont('helvetica', 'bold');
-                doc.setFontSize(22);
-                doc.text('AKACHAI FC - OFFICIAL RECEIPT', 105, 20, null, null, 'center');
-                doc.setTextColor(224, 224, 224);
-                doc.setFontSize(12);
-                doc.text(`Receipt #: ${receiptNumber}`, 20, 40);
-                doc.text(`Date: ${new Date().toLocaleDateString()}`, 150, 40);
-
-                doc.autoTable({
-                    startY: 50,
-                    head: [['Payer Name', 'Payment For', 'Amount']],
-                    body: [[payerName, purpose, formatCurrency(amount)]],
-                    theme: 'grid',
-                    styles: { fillColor: [18, 18, 18], textColor: [224, 224, 224], lineColor: [212, 175, 55] },
-                    headStyles: { fillColor: [212, 175, 55], textColor: [0, 0, 0], fontStyle: 'bold' }
-                });
-
+                // Generate QR Code as a data URL
                 const qr = qrcode(0, 'L');
                 qr.addData(securityCode);
                 qr.make();
                 const qrImgData = qr.createDataURL(4);
-                
-                doc.text('Scan to verify:', 20, doc.autoTable.previous.finalY + 20);
-                doc.addImage(qrImgData, 'PNG', 20, doc.autoTable.previous.finalY + 25, 40, 40);
-                
-                const pdfBase64 = doc.output('datauristring').split(',')[1];
-                
+
+                // Save receipt data to Firestore for verification
                 await addDoc(collection(db, `apps/${appId}/receipts`), {
                     receiptNumber, securityCode, payerName, payerEmail, amount, purpose, createdAt: Timestamp.now()
                 });
-                
+
+                // Prepare template parameters for an HTML email
                 const templateParams = {
                     to_name: payerName,
                     to_email: payerEmail,
                     receipt_number: receiptNumber,
                     amount: formatCurrency(amount),
                     purpose: purpose,
-                    pdf_attachment: pdfBase64
+                    receipt_date: new Date().toLocaleDateString(),
+                    qr_code_image: qrImgData // Send the QR code as a data URL for embedding in the email
                 };
+
+                // Send the email using EmailJS
                 await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_RECEIPT_TEMPLATE_ID, templateParams);
-                
+
                 showToast('Receipt sent successfully!');
                 e.target.reset();
 
             } catch (error) {
-                console.error("Receipt generation failed:", error);
-                showToast("Failed to send receipt. Check console.", true);
+                console.error("Receipt sending failed:", error);
+                showToast("Failed to send receipt. Check console for details.", true);
             } finally {
                 hideLoader();
             }
@@ -1165,7 +1183,6 @@
             }
         }
         
-        // EDIT START: Add logic to populate Social Media form with current data
         function loadSocialMediaFormData() {
             const monthYear = new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
             document.getElementById('current-month-year').textContent = monthYear;
@@ -1185,15 +1202,111 @@
             });
         }
         
-        // Call this when user navigates to the social media page
-        const originalShowPage = showPage;
-        showPage = (pageId) => {
-            originalShowPage(pageId);
-            if (pageId === 'social-media-content') {
-                loadSocialMediaFormData();
+        // JERSEY ORDERS
+        async function getNextOrderNumber() {
+            const counterRef = doc(db, `apps/${appId}/counters`, 'jerseyOrderCounter');
+            let newOrderNumber;
+            await runTransaction(db, async (transaction) => {
+                const counterDoc = await transaction.get(counterRef);
+                if (!counterDoc.exists()) {
+                    newOrderNumber = 1;
+                    transaction.set(counterRef, { currentNumber: newOrderNumber });
+                } else {
+                    newOrderNumber = counterDoc.data().currentNumber + 1;
+                    transaction.update(counterRef, { currentNumber: newOrderNumber });
+                }
+            });
+            return `AFC-J-${String(newOrderNumber).padStart(4, '0')}`;
+        }
+
+        async function handleJerseyOrderSubmit(e) {
+            e.preventDefault();
+            showLoader();
+            try {
+                const orderNumber = await getNextOrderNumber();
+                const orderData = {
+                    orderNumber: orderNumber,
+                    customerName: document.getElementById('customer-name').value,
+                    customerPhone: document.getElementById('customer-phone').value,
+                    jerseySize: document.getElementById('jersey-size').value,
+                    status: 'Pending', // Pending -> Paid -> Delivered
+                    placedBy: currentUser.name,
+                    createdAt: Timestamp.now()
+                };
+                
+                await addDoc(collection(db, `apps/${appId}/jerseyOrders`), orderData);
+                showToast(`Order placed successfully! Order #: ${orderNumber}`);
+                e.target.reset();
+
+            } catch (error) {
+                console.error("Error placing jersey order:", error);
+                showToast("Failed to place order. Please try again.", true);
+            } finally {
+                hideLoader();
             }
-        };
-        // EDIT END
+        }
+        
+        function listenForJerseyOrders() {
+            const ordersCol = collection(db, `apps/${appId}/jerseyOrders`);
+            const q = query(ordersCol, orderBy('createdAt', 'desc'));
+            onSnapshot(q, (snapshot) => {
+                const listEl = document.getElementById('jersey-orders-list');
+                listEl.innerHTML = `
+                    <div class="grid grid-cols-5 gap-4 font-bold p-2 border-b border-gray-600">
+                        <div>Order #</div>
+                        <div>Customer</div>
+                        <div>Size</div>
+                        <div>Date</div>
+                        <div>Status</div>
+                    </div>
+                `;
+                if(snapshot.empty){
+                    listEl.innerHTML += '<p class="p-4 text-center">No jersey orders found.</p>';
+                    return;
+                }
+                snapshot.forEach(doc => {
+                    const order = {id: doc.id, ...doc.data()};
+                    const el = document.createElement('div');
+                    el.className = 'grid grid-cols-5 gap-4 items-center p-2 border-b border-gray-700';
+                    el.innerHTML = `
+                        <div>${order.orderNumber}</div>
+                        <div>
+                            <p>${order.customerName}</p>
+                            <p class="text-xs text-gray-400">${order.customerPhone}</p>
+                        </div>
+                        <div>${order.jerseySize}</div>
+                        <div>${order.createdAt.toDate().toLocaleDateString()}</div>
+                        <div>
+                            <select class="order-status-select bg-gray-600 rounded p-1" data-id="${order.id}">
+                                <option value="Pending" ${order.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                                <option value="Paid" ${order.status === 'Paid' ? 'selected' : ''}>Paid</option>
+                                <option value="Delivered" ${order.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+                            </select>
+                        </div>
+                    `;
+                    listEl.appendChild(el);
+                });
+            });
+        }
+        
+        document.getElementById('jersey-orders-list').addEventListener('change', async (e) => {
+            if(e.target.classList.contains('order-status-select')){
+                showLoader();
+                const orderId = e.target.dataset.id;
+                const newStatus = e.target.value;
+                try {
+                    const orderDocRef = doc(db, `apps/${appId}/jerseyOrders`, orderId);
+                    await updateDoc(orderDocRef, { status: newStatus });
+                    showToast("Order status updated.");
+                } catch(error) {
+                    console.error("Error updating order status: ", error);
+                    showToast("Failed to update status.", true);
+                } finally {
+                    hideLoader();
+                }
+            }
+        });
+
 
         // NOTIFICATIONS
         async function createNotification(message, roles) {
