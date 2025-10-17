@@ -385,6 +385,64 @@
                     </div>
                 </div>
 
+                <!-- Player Registration Content -->
+                <div id="player-registration-content" class="content-section">
+                    <div class="bg-card p-6 rounded-lg mb-6">
+                        <h3 class="text-xl font-bold mb-4">Register New Player</h3>
+                        <form id="player-registration-form">
+                            <!-- Player Details -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                                <div>
+                                    <label>Player's Full Name</label>
+                                    <input id="player-name" type="text" class="w-full p-2 bg-gray-700 rounded" required>
+                                </div>
+                                <div>
+                                    <label>Date of Birth</label>
+                                    <input id="player-dob" type="date" class="w-full p-2 bg-gray-700 rounded" required>
+                                </div>
+                                <div>
+                                    <label>Nationality</label>
+                                    <input id="player-nationality" type="text" class="w-full p-2 bg-gray-700 rounded" required>
+                                </div>
+                                <div>
+                                    <label>Position</label>
+                                    <select id="player-position" class="w-full p-2 bg-gray-700 rounded">
+                                        <option>Goalkeeper</option>
+                                        <option>Defender</option>
+                                        <option>Midfielder</option>
+                                        <option>Forward</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label>Jersey Number</label>
+                                    <input id="player-jersey" type="number" class="w-full p-2 bg-gray-700 rounded" min="1" max="99" required>
+                                </div>
+                            </div>
+                            <!-- Guardian Details -->
+                            <h4 class="text-lg font-semibold mb-2 border-t border-gray-700 pt-4">Guardian / Next of Kin</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label>Full Name</label>
+                                    <input id="guardian-name" type="text" class="w-full p-2 bg-gray-700 rounded" required>
+                                </div>
+                                <div>
+                                    <label>Relationship</label>
+                                    <input id="guardian-relationship" type="text" class="w-full p-2 bg-gray-700 rounded" required>
+                                </div>
+                                <div>
+                                    <label>Contact Number</label>
+                                    <input id="guardian-phone" type="tel" class="w-full p-2 bg-gray-700 rounded" required>
+                                </div>
+                            </div>
+                            <button type="submit" class="mt-6 bg-gold text-black font-bold py-2 px-6 rounded-md hover-bg-gold-dark">Add Player</button>
+                        </form>
+                    </div>
+                    <h2 class="text-2xl font-semibold mb-4">Registered Players List</h2>
+                    <div id="players-list" class="bg-card p-4 rounded-lg">
+                        <!-- Player list will be dynamically added here -->
+                    </div>
+                </div>
+
             </div>
         </div>
     </main>
@@ -624,6 +682,10 @@
             } else {
                 document.getElementById('admin-alerts-section').style.display = 'none';
             }
+            
+            if (['admin', 'president'].includes(currentUserRole)) {
+                 navLinks += `<a href="#" data-page="player-registration-content" class="nav-link block py-2 px-4 rounded hover:bg-gray-700"><i class="fas fa-user-plus w-6"></i> Player Registration</a>`;
+            }
 
             if (['admin', 'treasurer', 'treasury_staff', 'president'].includes(currentUserRole)) {
                 navLinks += `<a href="#" data-page="finances-content" class="nav-link block py-2 px-4 rounded hover:bg-gray-700"><i class="fas fa-coins w-6"></i> Finances</a>`;
@@ -657,6 +719,11 @@
                 listenForTransactions();
                 listenForJerseyOrders();
             }
+
+            if(['admin', 'president'].includes(currentUserRole)){
+                listenForRegisteredPlayers();
+            }
+
             if (currentUserRole === 'admin') {
                 listenForUsers();
             }
@@ -813,6 +880,7 @@
             document.getElementById('add-user-form').onsubmit = handleAddUserSubmit;
             document.getElementById('social-media-form').onsubmit = handleSocialMediaSubmit;
             document.getElementById('jersey-order-form').onsubmit = handleJerseyOrderSubmit;
+            document.getElementById('player-registration-form').onsubmit = handlePlayerRegistrationSubmit;
         }
 
         // --- MODULE LOGIC (Requisitions, Finances, Chat etc.) ---
@@ -1022,6 +1090,8 @@
                     to_name: payerName,
                     to_email: payerEmail,
                     is_receipt: true,
+                    is_order_confirmation: false,
+                    is_pickup_notification: false,
                     receipt_number: receiptNumber,
                     amount: formatCurrency(amount),
                     purpose: purpose,
@@ -1301,7 +1371,9 @@
                     email_title: "ORDER CONFIRMATION",
                     to_name: customerName,
                     to_email: customerEmail,
+                    is_receipt: false,
                     is_order_confirmation: true,
+                    is_pickup_notification: false,
                     order_number: orderNumber,
                     jersey_size: jerseySize,
                     delivery_location: deliveryLocation
@@ -1383,6 +1455,8 @@
                                 email_title: "ORDER READY FOR PICK UP",
                                 to_name: orderData.customerName,
                                 to_email: orderData.customerEmail,
+                                is_receipt: false,
+                                is_order_confirmation: false,
                                 is_pickup_notification: true,
                                 order_number: orderData.orderNumber,
                                 delivery_location: orderData.deliveryLocation
@@ -1403,6 +1477,107 @@
             }
         });
 
+        // PLAYER REGISTRATION
+        async function getNextPlayerId() {
+            const counterRef = doc(db, `apps/${appId}/counters`, 'playerCounter');
+            let newPlayerNumber;
+            await runTransaction(db, async (transaction) => {
+                const counterDoc = await transaction.get(counterRef);
+                if (!counterDoc.exists()) {
+                    newPlayerNumber = 1;
+                    transaction.set(counterRef, { currentNumber: newPlayerNumber });
+                } else {
+                    newPlayerNumber = counterDoc.data().currentNumber + 1;
+                    transaction.update(counterRef, { currentNumber: newPlayerNumber });
+                }
+            });
+            return `AFC-P-${String(newPlayerNumber).padStart(4, '0')}`;
+        }
+
+        async function handlePlayerRegistrationSubmit(e) {
+            e.preventDefault();
+            showLoader();
+            try {
+                const playerId = await getNextPlayerId();
+
+                const playerData = {
+                    playerId: playerId,
+                    name: document.getElementById('player-name').value,
+                    dob: document.getElementById('player-dob').value,
+                    nationality: document.getElementById('player-nationality').value,
+                    position: document.getElementById('player-position').value,
+                    jerseyNumber: document.getElementById('player-jersey').value,
+                    guardian: {
+                        name: document.getElementById('guardian-name').value,
+                        relationship: document.getElementById('guardian-relationship').value,
+                        phone: document.getElementById('guardian-phone').value,
+                    },
+                    registeredBy: currentUser.name,
+                    createdAt: Timestamp.now()
+                };
+
+                await addDoc(collection(db, `apps/${appId}/players`), playerData);
+                showToast(`Player registered successfully! ID: ${playerId}`);
+                e.target.reset();
+
+            } catch (error) {
+                console.error("Error registering player:", error);
+                showToast("Failed to register player.", true);
+            } finally {
+                hideLoader();
+            }
+        }
+
+        function listenForRegisteredPlayers() {
+            const playersCol = collection(db, `apps/${appId}/players`);
+            const q = query(playersCol, orderBy('createdAt', 'desc'));
+            onSnapshot(q, (snapshot) => {
+                const listEl = document.getElementById('players-list');
+                listEl.innerHTML = `
+                    <div class="hidden md:grid grid-cols-5 gap-4 font-bold p-2 border-b border-gray-600">
+                        <div>Player ID</div>
+                        <div>Name</div>
+                        <div>Position</div>
+                        <div>Jersey #</div>
+                        <div>Next of Kin</div>
+                    </div>
+                `;
+                if(snapshot.empty){
+                    listEl.innerHTML += '<p class="p-4 text-center">No players registered yet.</p>';
+                    return;
+                }
+                snapshot.forEach(doc => {
+                    const player = {id: doc.id, ...doc.data()};
+                    const el = document.createElement('div');
+                    el.className = 'grid grid-cols-1 md:grid-cols-5 gap-4 items-center p-2 border-b border-gray-700';
+                    el.innerHTML = `
+                        <div>
+                            <p class="font-bold md:hidden">Player ID</p>
+                            ${player.playerId}
+                        </div>
+                        <div>
+                            <p class="font-bold md:hidden">Name</p>
+                            <p>${player.name}</p>
+                            <p class="text-xs text-gray-400">DOB: ${player.dob}</p>
+                        </div>
+                        <div>
+                            <p class="font-bold md:hidden">Position</p>
+                            ${player.position}
+                        </div>
+                        <div>
+                            <p class="font-bold md:hidden">Jersey #</p>
+                            ${player.jerseyNumber}
+                        </div>
+                        <div>
+                            <p class="font-bold md:hidden">Next of Kin</p>
+                            <p>${player.guardian.name} (${player.guardian.relationship})</p>
+                             <p class="text-xs text-gray-400">${player.guardian.phone}</p>
+                        </div>
+                    `;
+                    listEl.appendChild(el);
+                });
+            });
+        }
 
         // NOTIFICATIONS
         async function createNotification(message, roles) {
