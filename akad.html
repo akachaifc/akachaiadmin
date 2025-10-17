@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AKACHAI ADMIN PORTAL</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Chart.js for graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- EmailJS for sending emails -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <!-- jsPDF for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- jsPDF-AutoTable for tables in PDFs -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+    <!-- QR Code Generator -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator/qrcode.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
+
+    <style>
+        /* Custom Styles for Gold & Black Theme */
+        :root {
+            --bg-color: #121212;
+            --primary-color: #D4AF37; /* Gold */
+            --text-color: #E0E0E0;
+            --card-bg: #1E1E1E;
+            --border-color: #333;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Inter', sans-serif;
+        }
+
+        .gold-text { color: var(--primary-color); }
+        .bg-card { background-color: var(--card-bg); }
+        .border-gold { border-color: var(--primary-color); }
+        .bg-gold { background-color: var(--primary-color); }
+        .hover-bg-gold-dark:hover { background-color: #b89b31; }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--card-bg); }
+        ::-webkit-scrollbar-thumb { background: var(--primary-color); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #b89b31; }
+
+        /* Hide sections by default */
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        /* Spinner */
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary-color);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center hidden">
+        <div class="loader"></div>
+    </div>
+
+    <!-- Login Section -->
+    <section id="login-section" class="flex items-center justify-center min-h-screen">
+        <div class="bg-card p-8 rounded-lg shadow-lg w-full max-w-md border border-gray-700">
+             <img src="https://i.ibb.co/x8KnbRxQ/1000324643-92de31910003d42fc3ade892f8059b77-8-7-2025-1-30-00-PM-removebg-preview.png" alt="AKACHAI FC Logo" class="h-20 w-20 mx-auto mb-4 object-contain">
+            <h1 class="text-3xl font-bold text-center gold-text mb-6">AKACHAI ADMIN PORTAL</h1>
+            <form id="login-form">
+                <div class="mb-4">
+                    <label for="email" class="block text-sm font-medium mb-2">Email</label>
+                    <input type="email" id="login-email" class="w-full p-3 bg-gray-700 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-gold" required>
+                </div>
+                <div class="mb-6">
+                    <label for="password" class="block text-sm font-medium mb-2">Password</label>
+                    <input type="password" id="login-password" class="w-full p-3 bg-gray-700 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-gold" required>
+                </div>
+                <button type="submit" class="w-full bg-gold text-black font-bold py-3 rounded-md hover-bg-gold-dark transition-colors">Login</button>
+            </form>
+            <p id="login-error" class="text-red-500 text-center mt-4"></p>
+        </div>
+    </section>
+
+    <!-- Main App Section -->
+    <main id="app-section" class="hidden">
+        <div class="flex h-screen">
+            <!-- Sidebar Navigation -->
+            <aside class="w-64 bg-card flex-shrink-0 p-4 border-r border-gray-700 flex flex-col">
+                <div class="text-center mb-8">
+                    <img src="https://i.ibb.co/x8KnbRxQ/1000324643-92de31910003d42fc3ade892f8059b77-8-7-2025-1-30-00-PM-removebg-preview.png" alt="AKACHAI FC Logo" class="h-16 w-16 mx-auto mb-2 object-contain">
+                    <h2 class="text-2xl font-bold gold-text">Akachai FC</h2>
+                </div>
+                <nav id="main-nav" class="space-y-2 flex-grow">
+                    <!-- Nav links will be injected by JS based on role -->
+                </nav>
+                 <button id="logout-btn" class="w-full mt-auto bg-red-600 text-white font-bold py-2 px-4 rounded-md hover:bg-red-700 transition-colors flex items-center justify-center gap-2">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </aside>
+
+            <!-- Main Content Area -->
+            <div class="flex-1 p-6 md:p-8 overflow-y-auto">
+                <header class="flex justify-between items-center mb-6">
+                    <h1 id="page-title" class="text-3xl font-bold gold-text">Dashboard</h1>
+                    <div class="flex items-center gap-4">
+                        <div class="relative">
+                             <i class="fas fa-bell text-xl cursor-pointer" id="notification-icon"></i>
+                             <span id="notification-badge" class="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center hidden">0</span>
+                        </div>
+                        <div id="user-profile" class="text-right">
+                            <p class="font-semibold" id="user-name-display"></p>
+                            <p class="text-sm text-gray-400" id="user-role-display"></p>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Dashboard Content -->
+                <div id="dashboard-content" class="content-section active">
+                    <h2 class="text-2xl font-semibold mb-4">Weekly Social Media Engagements</h2>
+                    <div class="bg-card p-4 rounded-lg shadow-md border border-gray-700">
+                        <canvas id="engagements-chart"></canvas>
+                    </div>
+                    <div id="admin-alerts-section" class="mt-6">
+                        <h2 class="text-2xl font-semibold mb-4">Send Important Alert</h2>
+                        <div class="bg-card p-4 rounded-lg shadow-md border border-gray-700">
+                           <textarea id="alert-message" class="w-full p-3 bg-gray-700 rounded-md border border-gray-600" rows="3" placeholder="Type your alert message here..."></textarea>
+                           <button id="send-alert-btn" class="mt-2 bg-gold text-black font-bold py-2 px-4 rounded-md hover-bg-gold-dark">Send Alert</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Requisitions Content -->
+                <div id="requisitions-content" class="content-section">
+                    <button id="new-requisition-btn" class="bg-gold text-black font-bold py-2 px-4 rounded-md hover-bg-gold-dark mb-4">New Requisition</button>
+                    <div id="new-requisition-form-container" class="bg-card p-6 rounded-lg mb-6 hidden">
+                        <h3 class="text-xl font-bold mb-4">Requisition Form</h3>
+                        <form id="requisition-form">
+                             <!-- Form fields here -->
+                             <input type="text" id="req-name" placeholder="Your Name" class="w-full p-2 mb-2 bg-gray-700 rounded" required>
+                             <textarea id="req-reason" placeholder="Reason for Requisition" class="w-full p-2 mb-2 bg-gray-700 rounded" required></textarea>
+                             <div id="req-items-container">
+                                <div class="flex gap-2 mb-2 items-center">
+                                    <input type="text" placeholder="Item Description" class="w-1/2 p-2 bg-gray-700 rounded req-item-desc" required>
+                                    <input type="number" placeholder="Qty" class="w-1/6 p-2 bg-gray-700 rounded req-item-qty" required min="1" step="any">
+                                    <input type="number" placeholder="Unit Price" class="w-1/4 p-2 bg-gray-700 rounded req-item-price" required min="0" step="any">
+                                </div>
+                             </div>
+                             <button type="button" id="add-req-item-btn" class="text-sm bg-gray-600 py-1 px-3 rounded hover:bg-gray-500 mb-4">Add Another Item</button>
+                             <button type="submit" class="bg-gold text-black font-bold py-2 px-4 rounded-md hover-bg-gold-dark">Submit Requisition</button>
+                        </form>
+                    </div>
+                    <h2 class="text-2xl font-semibold mb-4">Requisition History & Approvals</h2>
+                    <div id="requisitions-list" class="space-y-4">
+                        <!-- Requisition items will be dynamically added here -->
+                    </div>
+                </div>
+
+                <!-- Finances Content -->
+                <div id="finances-content" class="content-section">
+                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div class="bg-card p-4 rounded-lg">
+                            <h3 class="text-lg font-bold text-green-400">Total Inflow</h3>
+                            <p id="total-inflow" class="text-3xl font-semibold">0.00</p>
+                        </div>
+                        <div class="bg-card p-4 rounded-lg">
+                            <h3 class="text-lg font-bold text-red-400">Total Outflow</h3>
+                            <p id="total-outflow" class="text-3xl font-semibold">0.00</p>
+                        </div>
+                    </div>
+                     <div class="bg-card p-6 rounded-lg mb-6">
+                        <h3 class="text-xl font-bold mb-4">Add New Transaction</h3>
+                        <form id="transaction-form" class="flex flex-wrap gap-4 items-end">
+                            <div class="flex-grow">
+                                <label>Description</label>
+                                <input id="trans-desc" type="text" placeholder="e.g., Ticket Sales" class="w-full p-2 bg-gray-700 rounded" required>
+                            </div>
+                            <div class="flex-grow">
+                                <label>Amount</label>
+                                <input id="trans-amount" type="number" placeholder="1000" class="w-full p-2 bg-gray-700 rounded" required min="0" step="any">
+                            </div>
+                            <div class="flex-grow">
+                                <label>Type</label>
+                                <select id="trans-type" class="w-full p-2 bg-gray-700 rounded">
+                                    <option value="inflow">Inflow</option>
+                                    <option value="outflow">Outflow</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="bg-gold text-black font-bold py-2 px-4 rounded-md hover-bg-gold-dark">Add</button>
+                        </form>
+                    </div>
+                    <h2 class="text-2xl font-semibold mb-4">Transaction History</h2>
+                    <div id="transactions-list" class="bg-card p-4 rounded-lg">
+                       <!-- transaction items will be added here -->
+                    </div>
+                </div>
+
+                <!-- Receipt Issuance Content -->
+                <div id="receipts-content" class="content-section">
+                    <h2 class="text-2xl font-semibold mb-4">Issue a New Receipt</h2>
+                    <div class="bg-card p-6 rounded-lg">
+                        <form id="receipt-form">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label>Payer's Name</label>
+                                    <input id="payer-name" type="text" class="w-full p-2 bg-gray-700 rounded" required>
+                                </div>
+                                <div>
+                                    <label>Payer's Email</label>
+                                    <input id="payer-email" type="email" class="w-full p-2 bg-gray-700 rounded" required>
+                                </div>
+                                <div>
+                                    <label>Amount Paid</label>
+                                    <input id="payment-amount" type="number" class="w-full p-2 bg-gray-700 rounded" required min="1" step="any">
+                                </div>
+                                <div>
+                                    <label>Payment For</label>
+                                    <input id="payment-purpose" type="text" placeholder="e.g., Club Membership" class="w-full p-2 bg-gray-700 rounded" required>
+                                </div>
+                            </div>
+                            <button type="submit" class="mt-4 bg-gold text-black font-bold py-2 px-6 rounded-md hover-bg-gold-dark">Generate & Send Receipt</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Chat Room Content -->
+                <div id="chat-content" class="content-section">
+                    <h2 class="text-2xl font-semibold mb-4">Club Chat Room</h2>
+                    <div class="bg-card rounded-lg h-[60vh] flex flex-col">
+                        <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-4">
+                            <!-- Chat messages will appear here -->
+                        </div>
+                        <div class="p-4 border-t border-gray-700">
+                            <form id="chat-form" class="flex gap-2">
+                                <input id="chat-input" type="text" placeholder="Type a message..." class="flex-1 p-2 bg-gray-700 rounded" required>
+                                <button type="submit" class="bg-gold text-black font-bold py-2 px-4 rounded-md hover-bg-gold-dark">Send</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                 <!-- User Management (Admin Only) -->
+                <div id="user-management-content" class="content-section">
+                    <div class="bg-card p-6 rounded-lg mb-6">
+                        <h3 class="text-xl font-bold mb-4">Add New User</h3>
+                        <form id="add-user-form" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                            <div class="md:col-span-1">
+                                <label>Full Name</label>
+                                <input id="new-user-name" type="text" class="w-full p-2 bg-gray-700 rounded" required>
+                            </div>
+                            <div class="md:col-span-1">
+                                <label>Email</label>
+                                <input id="new-user-email" type="email" class="w-full p-2 bg-gray-700 rounded" required>
+                            </div>
+                            <div class="md:col-span-1">
+                                <label>Role</label>
+                                <select id="new-user-role" class="w-full p-2 bg-gray-700 rounded">
+                                    <option value="user">General User</option>
+                                    <option value="treasurer">Treasurer</option>
+                                    <option value="president">President</option>
+                                    <option value="admin">Admin</option>
+                                    <option value="social_media">Social Media</option>
+                                    <option value="treasury_staff">Treasury Staff</option>
+                                </select>
+                            </div>
+                             <button type="submit" class="bg-gold text-black font-bold py-2 px-4 rounded-md hover-bg-gold-dark">Create User</button>
+                        </form>
+                        <p class="text-sm mt-2 text-gray-400">A password reset email will be sent to the new user.</p>
+                    </div>
+                    <h2 class="text-2xl font-semibold mb-4">Manage Users</h2>
+                    <div id="users-list" class="bg-card p-4 rounded-lg">
+                        <!-- User list will appear here -->
+                    </div>
+                </div>
+
+                <!-- Social Media Stats Content -->
+                <div id="social-media-content" class="content-section">
+                    <h2 class="text-2xl font-semibold mb-4">Record Social Media Engagements</h2>
+                    <div class="bg-card p-6 rounded-lg">
+                        <form id="social-media-form">
+                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                 <div>
+                                    <label>Date</label>
+                                    <input id="engagement-date" type="date" class="w-full p-2 bg-gray-700 rounded" required>
+                                </div>
+                                <div>
+                                    <label>Total Engagements (Likes, Shares, Comments)</label>
+                                    <input id="engagement-count" type="number" class="w-full p-2 bg-gray-700 rounded" required min="0">
+                                </div>
+                             </div>
+                              <button type="submit" class="mt-4 bg-gold text-black font-bold py-2 px-6 rounded-md hover-bg-gold-dark">Save Data</button>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { 
+            getAuth, 
+            onAuthStateChanged, 
+            signInWithEmailAndPassword,
+            createUserWithEmailAndPassword,
+            sendPasswordResetEmail,
+            signOut 
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { 
+            getFirestore, 
+            collection, 
+            doc, 
+            addDoc,
+            setDoc, 
+            getDoc, 
+            getDocs,
+            updateDoc,
+            deleteDoc,
+            onSnapshot,
+            query,
+            orderBy,
+            Timestamp,
+            where
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        // --- PLACEHOLDERS & CONFIG ---
+        // Your actual Firebase config object.
+        const providedFirebaseConfig = {
+           apiKey: "AIzaSyCX1fbImBBmjz1nbVuwgAwWoQJRhP_eqFs",
+           authDomain: "akachai-fc-records.firebaseapp.com",
+           projectId: "akachai-fc-records",
+           storageBucket: "akachai-fc-records.appspot.com",
+           messagingSenderId: "368803590661",
+           appId: "1:368803590661:web:ca7d0597f22e6bd40de26c"
+        };
+        // This logic allows the app to use injected credentials if available, otherwise it falls back to your provided config.
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : providedFirebaseConfig;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'akachai-fc-portal';
+
+        // --- EMAILJS CONFIG: Your actual credentials ---
+        const EMAILJS_SERVICE_ID = "service_9nzfwtm";
+        const EMAILJS_RECEIPT_TEMPLATE_ID = "template_lu4axsh";
+        const EMAILJS_NEW_USER_TEMPLATE_ID = "template_lu4axsh"; // Using the same template for new users, adjust if you have a different one.
+        const EMAILJS_PUBLIC_KEY = "l3bB3ofE87AW5cFb2";
+
+
+        // --- FIREBASE INITIALIZATION ---
+        let app, auth, db;
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+            console.log("Firebase initialized successfully.");
+            emailjs.init(EMAILJS_PUBLIC_KEY);
+        } catch (error) {
+            console.error("Firebase initialization failed:", error);
+            document.body.innerHTML = `<div class="text-red-500 text-center p-8">Failed to initialize application services. Please check configuration and console. Error: ${error.message}</div>`;
+        }
+
+        // --- GLOBAL STATE ---
+        let currentUser = null;
+        let currentUserRole = 'user';
+        let engagementsChart = null;
+        
+        // --- UI ELEMENTS ---
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const loginSection = document.getElementById('login-section');
+        const appSection = document.getElementById('app-section');
+        const loginForm = document.getElementById('login-form');
+        const loginError = document.getElementById('login-error');
+        const logoutBtn = document.getElementById('logout-btn');
+
+        // --- HELPER FUNCTIONS ---
+        const showLoader = () => loadingOverlay.classList.remove('hidden');
+        const hideLoader = () => loadingOverlay.classList.add('hidden');
+
+        const showToast = (message, isError = false) => {
+            const toast = document.createElement('div');
+            toast.textContent = message;
+            toast.className = `fixed bottom-5 right-5 p-4 rounded-lg text-white ${isError ? 'bg-red-500' : 'bg-green-500'}`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        };
+
+        const showPage = (pageId) => {
+            document.querySelectorAll('.content-section').forEach(section => section.classList.remove('active'));
+            const activePage = document.getElementById(pageId);
+            if (activePage) {
+                activePage.classList.add('active');
+                const title = pageId.replace('-content', '').replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                document.getElementById('page-title').textContent = title;
+            } else {
+                document.getElementById('dashboard-content').classList.add('active');
+                document.getElementById('page-title').textContent = 'Dashboard';
+            }
+        };
+
+        const formatCurrency = (amount) => {
+            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+        };
+        
+        // --- AUTHENTICATION ---
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                try {
+                    let userDocRef = doc(db, `apps/${appId}/users`, user.uid);
+                    let userDoc = await getDoc(userDocRef);
+
+                    if (!userDoc.exists()) {
+                        // This might be a new user created by an admin, signing in for the first time.
+                        const pendingUserDocRef = doc(db, `apps/${appId}/users_pending`, user.email);
+                        const pendingUserDoc = await getDoc(pendingUserDocRef);
+
+                        if (pendingUserDoc.exists()) {
+                            // First login confirmed. Create the official user document.
+                            const pendingData = pendingUserDoc.data();
+                            await setDoc(userDocRef, {
+                                name: pendingData.name,
+                                email: user.email,
+                                role: pendingData.role,
+                                createdAt: pendingData.createdAt
+                            });
+                            
+                            // Clean up by deleting the pending document.
+                            await deleteDoc(pendingUserDocRef);
+
+                            // Re-fetch the newly created user document.
+                            userDoc = await getDoc(userDocRef);
+                        } else {
+                             throw new Error("User document not found and no pending registration was found for this email.");
+                        }
+                    }
+
+                    currentUser = { uid: user.uid, email: user.email, ...userDoc.data() };
+                    currentUserRole = currentUser.role || 'user';
+                    console.log("User logged in:", currentUser.name, "Role:", currentUserRole);
+                    await setupUIForUser();
+                    loginSection.classList.add('hidden');
+                    appSection.classList.remove('hidden');
+
+                } catch (error) {
+                     console.error("Auth state change error:", error);
+                     showToast(error.message, true);
+                    await signOut(auth);
+                }
+            } else {
+                currentUser = null;
+                currentUserRole = 'user';
+                loginSection.classList.remove('hidden');
+                appSection.classList.add('hidden');
+            }
+        });
+
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            showLoader();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                loginError.textContent = '';
+            } catch (error) {
+                loginError.textContent = error.message;
+            } finally {
+                hideLoader();
+            }
+        });
+
+        logoutBtn.addEventListener('click', () => signOut(auth));
+
+        // --- UI SETUP & DATA LOADING ---
+        const setupUIForUser = async () => {
+            document.getElementById('user-name-display').textContent = currentUser.name;
+            document.getElementById('user-role-display').textContent = currentUserRole.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            const nav = document.getElementById('main-nav');
+            let navLinks = `
+                <a href="#" data-page="dashboard-content" class="nav-link block py-2 px-4 rounded hover:bg-gray-700"><i class="fas fa-tachometer-alt w-6"></i> Dashboard</a>
+                <a href="#" data-page="requisitions-content" class="nav-link block py-2 px-4 rounded hover:bg-gray-700"><i class="fas fa-file-invoice w-6"></i> Requisitions</a>
+                <a href="#" data-page="chat-content" class="nav-link block py-2 px-4 rounded hover:bg-gray-700"><i class="fas fa-comments w-6"></i> Chat Room</a>
+            `;
+
+            if (currentUserRole === 'admin') {
+                navLinks += `<a href="#" data-page="user-management-content" class="nav-link block py-2 px-4 rounded hover:bg-gray-700"><i class="fas fa-users-cog w-6"></i> User Management</a>`;
+                document.getElementById('admin-alerts-section').style.display = 'block';
+            } else {
+                document.getElementById('admin-alerts-section').style.display = 'none';
+            }
+
+            if (['admin', 'treasurer', 'treasury_staff'].includes(currentUserRole)) {
+                navLinks += `<a href="#" data-page="finances-content" class="nav-link block py-2 px-4 rounded hover:bg-gray-700"><i class="fas fa-coins w-6"></i> Finances</a>`;
+                navLinks += `<a href="#" data-page="receipts-content" class="nav-link block py-2 px-4 rounded hover:bg-gray-700"><i class="fas fa-receipt w-6"></i> Issue Receipts</a>`;
+            }
+
+            if (['admin', 'social_media'].includes(currentUserRole)) {
+                navLinks += `<a href="#" data-page="social-media-content" class="nav-link block py-2 px-4 rounded hover:bg-gray-700"><i class="fas fa-chart-line w-6"></i> Social Stats</a>`;
+            }
+            
+            nav.innerHTML = navLinks;
+
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    showPage(e.currentTarget.dataset.page);
+                    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('bg-gold', 'text-black'));
+                    e.currentTarget.classList.add('bg-gold', 'text-black');
+                });
+            });
+            document.querySelector('.nav-link[data-page="dashboard-content"]').classList.add('bg-gold', 'text-black');
+
+
+            // Load data for all relevant sections
+            loadDashboardData();
+            listenForRequisitions();
+            listenForChatMessages();
+            listenForNotifications();
+
+            if (['admin', 'treasurer', 'treasury_staff'].includes(currentUserRole)) {
+                listenForTransactions();
+            }
+            if (currentUserRole === 'admin') {
+                listenForUsers();
+            }
+
+            // Bind events
+            bindStaticEvents();
+        };
+
+        // --- DASHBOARD ---
+        const loadDashboardData = () => {
+            const statsCol = collection(db, `apps/${appId}/socialMediaStats`);
+            const q = query(statsCol, orderBy('date', 'desc'));
+
+            onSnapshot(q, (snapshot) => {
+                const labels = [];
+                const data = [];
+                snapshot.docs.forEach(doc => {
+                    const stat = doc.data();
+                    const date = stat.date.toDate();
+                    labels.unshift(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+                    data.unshift(stat.engagements);
+                });
+
+                const ctx = document.getElementById('engagements-chart').getContext('2d');
+                if (engagementsChart) engagementsChart.destroy();
+                engagementsChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels,
+                        datasets: [{
+                            label: 'Engagements',
+                            data,
+                            borderColor: 'rgba(212, 175, 55, 1)',
+                            backgroundColor: 'rgba(212, 175, 55, 0.2)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: { responsive: true, scales: { y: { beginAtZero: true } } }
+                });
+            });
+        };
+        document.getElementById('send-alert-btn').addEventListener('click', async () => {
+            const message = document.getElementById('alert-message').value;
+            if (!message.trim()) return;
+            try {
+                const chatCol = collection(db, `apps/${appId}/chat`);
+                await addDoc(chatCol, {
+                    text: message,
+                    senderName: `${currentUser.name} (Admin Alert)`,
+                    senderId: currentUser.uid,
+                    timestamp: Timestamp.now(),
+                    isAlert: true
+                });
+                document.getElementById('alert-message').value = '';
+                showToast("Alert sent successfully!");
+            } catch (error) {
+                console.error("Error sending alert:", error);
+                showToast("Failed to send alert.", true);
+            }
+        });
+
+
+        // --- EVENT BINDING ---
+        function bindStaticEvents() {
+            // Requisition Form
+            const newReqBtn = document.getElementById('new-requisition-btn');
+            const newReqFormContainer = document.getElementById('new-requisition-form-container');
+            newReqBtn.onclick = () => newReqFormContainer.classList.toggle('hidden');
+            
+            document.getElementById('add-req-item-btn').onclick = () => {
+                const container = document.getElementById('req-items-container');
+                const newItem = document.createElement('div');
+                newItem.className = 'flex gap-2 mb-2 items-center';
+                newItem.innerHTML = `
+                    <input type="text" placeholder="Item Description" class="w-1/2 p-2 bg-gray-700 rounded req-item-desc" required>
+                    <input type="number" placeholder="Qty" class="w-1/6 p-2 bg-gray-700 rounded req-item-qty" required min="1" step="any">
+                    <input type="number" placeholder="Unit Price" class="w-1/4 p-2 bg-gray-700 rounded req-item-price" required min="0" step="any">
+                    <button type="button" class="text-red-500 remove-req-item-btn"><i class="fas fa-times-circle"></i></button>
+                `;
+                container.appendChild(newItem);
+            };
+            document.getElementById('req-items-container').addEventListener('click', e => {
+                if (e.target.closest('.remove-req-item-btn')) {
+                    e.target.closest('.flex').remove();
+                }
+            });
+
+            document.getElementById('requisition-form').onsubmit = handleRequisitionSubmit;
+            
+            // Other forms
+            document.getElementById('transaction-form').onsubmit = handleTransactionSubmit;
+            document.getElementById('receipt-form').onsubmit = handleReceiptSubmit;
+            document.getElementById('chat-form').onsubmit = handleChatSubmit;
+            document.getElementById('add-user-form').onsubmit = handleAddUserSubmit;
+            document.getElementById('social-media-form').onsubmit = handleSocialMediaSubmit;
+        }
+
+        // --- MODULE LOGIC (Requisitions, Finances, Chat etc.) ---
+        
+        // REQUISITIONS
+        async function handleRequisitionSubmit(e) {
+            e.preventDefault();
+            showLoader();
+            const items = [];
+            let total = 0;
+            document.querySelectorAll('#req-items-container .flex').forEach(itemEl => {
+                const desc = itemEl.querySelector('.req-item-desc').value;
+                const qty = parseFloat(itemEl.querySelector('.req-item-qty').value);
+                const price = parseFloat(itemEl.querySelector('.req-item-price').value);
+                items.push({ desc, qty, price });
+                total += qty * price;
+            });
+            
+            const requisitionData = {
+                requesterName: document.getElementById('req-name').value,
+                requesterId: currentUser.uid,
+                reason: document.getElementById('req-reason').value,
+                items,
+                total,
+                status: 'pending', // pending -> approved -> rejected
+                createdAt: Timestamp.now(),
+            };
+            
+            try {
+                const reqCol = collection(db, `apps/${appId}/requisitions`);
+                await addDoc(reqCol, requisitionData);
+                // Create notifications for president and treasurer
+                await createNotification('New requisition submitted', ['president', 'treasurer']);
+                showToast('Requisition submitted successfully!');
+                e.target.reset();
+                document.getElementById('new-requisition-form-container').classList.add('hidden');
+            } catch (error) {
+                console.error("Error submitting requisition:", error);
+                showToast('Failed to submit requisition.', true);
+            } finally {
+                hideLoader();
+            }
+        }
+        
+        function listenForRequisitions() {
+            const reqCol = collection(db, `apps/${appId}/requisitions`);
+            const q = query(reqCol, orderBy('createdAt', 'desc'));
+            onSnapshot(q, (snapshot) => {
+                const listEl = document.getElementById('requisitions-list');
+                listEl.innerHTML = '';
+                if (snapshot.empty) {
+                    listEl.innerHTML = '<p>No requisitions found.</p>';
+                    return;
+                }
+                snapshot.forEach(doc => {
+                    const req = { id: doc.id, ...doc.data() };
+                    const canApprove = (currentUserRole === 'president' || currentUserRole === 'treasurer') && req.status === 'pending';
+                    
+                    const itemHtml = req.items.map(i => `<li>${i.qty}x ${i.desc} @ ${formatCurrency(i.price)}</li>`).join('');
+                    
+                    const el = document.createElement('div');
+                    el.className = 'bg-card p-4 rounded-lg border border-gray-700';
+                    el.innerHTML = `
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="font-bold">${req.reason}</p>
+                                <p class="text-sm text-gray-400">By ${req.requesterName} on ${req.createdAt.toDate().toLocaleDateString()}</p>
+                                <p class="font-bold text-lg gold-text mt-2">Total: ${formatCurrency(req.total)}</p>
+                            </div>
+                            <span class="px-3 py-1 text-sm rounded-full 
+                                ${req.status === 'pending' ? 'bg-yellow-500 text-black' : req.status === 'approved' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}">
+                                ${req.status}
+                            </span>
+                        </div>
+                        <ul class="list-disc list-inside mt-2 text-gray-300">${itemHtml}</ul>
+                        ${canApprove ? `
+                        <div class="mt-4 flex gap-2">
+                            <button class="approve-req-btn bg-green-600 hover:bg-green-700 text-white py-1 px-3 rounded" data-id="${req.id}">Approve</button>
+                            <button class="reject-req-btn bg-red-600 hover:bg-red-700 text-white py-1 px-3 rounded" data-id="${req.id}">Reject</button>
+                        </div>
+                        ` : ''}
+                    `;
+                    listEl.appendChild(el);
+                });
+            });
+        }
+        document.getElementById('requisitions-list').addEventListener('click', async (e) => {
+            const button = e.target;
+            const reqId = button.dataset.id;
+            if (!reqId) return;
+
+            let newStatus = '';
+            if (button.classList.contains('approve-req-btn')) newStatus = 'approved';
+            if (button.classList.contains('reject-req-btn')) newStatus = 'rejected';
+            
+            if(newStatus){
+                showLoader();
+                try {
+                    const reqDocRef = doc(db, `apps/${appId}/requisitions`, reqId);
+                    await updateDoc(reqDocRef, { status: newStatus });
+                    showToast(`Requisition ${newStatus}.`);
+                } catch(error) {
+                    console.error("Error updating requisition:", error);
+                    showToast('Update failed.', true);
+                } finally {
+                    hideLoader();
+                }
+            }
+        });
+
+        // FINANCES
+        async function handleTransactionSubmit(e) {
+            e.preventDefault();
+            showLoader();
+            const transaction = {
+                description: document.getElementById('trans-desc').value,
+                amount: parseFloat(document.getElementById('trans-amount').value),
+                type: document.getElementById('trans-type').value,
+                addedBy: currentUser.name,
+                createdAt: Timestamp.now(),
+            };
+            try {
+                await addDoc(collection(db, `apps/${appId}/transactions`), transaction);
+                showToast('Transaction added!');
+                e.target.reset();
+            } catch (error) {
+                console.error("Error adding transaction:", error);
+                showToast('Failed to add transaction.', true);
+            } finally {
+                hideLoader();
+            }
+        }
+
+        function listenForTransactions() {
+            const transCol = collection(db, `apps/${appId}/transactions`);
+            const q = query(transCol, orderBy('createdAt', 'desc'));
+            onSnapshot(q, (snapshot) => {
+                const listEl = document.getElementById('transactions-list');
+                listEl.innerHTML = '';
+                let totalInflow = 0;
+                let totalOutflow = 0;
+                if(snapshot.empty){
+                    listEl.innerHTML = '<p>No transactions found.</p>';
+                }
+                snapshot.forEach(doc => {
+                    const trans = doc.data();
+                    if(trans.type === 'inflow') totalInflow += trans.amount;
+                    else totalOutflow += trans.amount;
+
+                    const el = document.createElement('div');
+                    el.className = `flex justify-between items-center p-2 border-b border-gray-700 ${trans.type === 'inflow' ? 'text-green-400' : 'text-red-400'}`;
+                    el.innerHTML = `
+                        <div>
+                            <p>${trans.description}</p>
+                            <p class="text-xs text-gray-500">${trans.createdAt.toDate().toLocaleString()}</p>
+                        </div>
+                        <p class="font-bold">${formatCurrency(trans.amount)}</p>
+                    `;
+                    listEl.appendChild(el);
+                });
+                document.getElementById('total-inflow').textContent = formatCurrency(totalInflow);
+                document.getElementById('total-outflow').textContent = formatCurrency(totalOutflow);
+            });
+        }
+
+        // RECEIPTS
+        async function handleReceiptSubmit(e) {
+            e.preventDefault();
+            showLoader();
+            const payerName = document.getElementById('payer-name').value;
+            const payerEmail = document.getElementById('payer-email').value;
+            const amount = parseFloat(document.getElementById('payment-amount').value);
+            const purpose = document.getElementById('payment-purpose').value;
+
+            const receiptNumber = `AFC-${Date.now()}`;
+            const securityCode = `SEC-${crypto.randomUUID()}`;
+
+            try {
+                // 1. Generate PDF
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+
+                // Gold and Black Theme
+                doc.setFillColor(18, 18, 18); // Black
+                doc.rect(0, 0, 210, 297, 'F');
+                doc.setTextColor(212, 175, 55); // Gold
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(22);
+                doc.text('AKACHAI FC - OFFICIAL RECEIPT', 105, 20, null, null, 'center');
+
+                doc.setTextColor(224, 224, 224); // Light Gray
+                doc.setFontSize(12);
+                doc.text(`Receipt #: ${receiptNumber}`, 20, 40);
+                doc.text(`Date: ${new Date().toLocaleDateString()}`, 150, 40);
+
+                doc.autoTable({
+                    startY: 50,
+                    head: [['Payer Name', 'Payment For', 'Amount']],
+                    body: [[payerName, purpose, formatCurrency(amount)]],
+                    theme: 'grid',
+                    styles: {
+                        fillColor: [18, 18, 18],
+                        textColor: [224, 224, 224],
+                        lineColor: [212, 175, 55]
+                    },
+                    headStyles: {
+                        fillColor: [212, 175, 55],
+                        textColor: [0, 0, 0],
+                        fontStyle: 'bold'
+                    }
+                });
+
+                // 2. Generate QR Code
+                const qr = qrcode(0, 'L');
+                qr.addData(securityCode);
+                qr.make();
+                const qrImgData = qr.createDataURL(4);
+                
+                doc.text('Scan to verify:', 20, doc.autoTable.previous.finalY + 20);
+                doc.addImage(qrImgData, 'PNG', 20, doc.autoTable.previous.finalY + 25, 40, 40);
+                
+                const pdfBase64 = doc.output('datauristring').split(',')[1];
+                
+                // 3. Store in Firestore
+                await addDoc(collection(db, `apps/${appId}/receipts`), {
+                    receiptNumber, securityCode, payerName, payerEmail, amount, purpose, createdAt: Timestamp.now()
+                });
+                
+                // 4. Send Email via EmailJS
+                const templateParams = {
+                    to_name: payerName,
+                    to_email: payerEmail,
+                    receipt_number: receiptNumber,
+                    amount: formatCurrency(amount),
+                    purpose: purpose,
+                    pdf_attachment: pdfBase64
+                };
+                await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_RECEIPT_TEMPLATE_ID, templateParams);
+                
+                showToast('Receipt sent successfully!');
+                e.target.reset();
+
+            } catch (error) {
+                console.error("Receipt generation failed:", error);
+                showToast("Failed to send receipt. Check console.", true);
+            } finally {
+                hideLoader();
+            }
+        }
+        
+        // CHAT
+        async function handleChatSubmit(e) {
+            e.preventDefault();
+            const input = document.getElementById('chat-input');
+            const messageText = input.value.trim();
+            if (!messageText) return;
+            
+            try {
+                await addDoc(collection(db, `apps/${appId}/chat`), {
+                    text: messageText,
+                    senderName: currentUser.name,
+                    senderId: currentUser.uid,
+                    timestamp: Timestamp.now()
+                });
+                input.value = '';
+            } catch (error) {
+                console.error("Error sending message:", error);
+                showToast('Could not send message.', true);
+            }
+        }
+        
+        function listenForChatMessages() {
+            const chatCol = collection(db, `apps/${appId}/chat`);
+            const q = query(chatCol, orderBy('timestamp', 'asc'));
+            onSnapshot(q, (snapshot) => {
+                const messagesEl = document.getElementById('chat-messages');
+                messagesEl.innerHTML = '';
+                snapshot.forEach(doc => {
+                    const msg = doc.data();
+                    const isMe = msg.senderId === currentUser.uid;
+                    const el = document.createElement('div');
+                    el.className = `flex flex-col ${isMe ? 'items-end' : 'items-start'}`;
+                    const bgColor = msg.isAlert ? 'bg-red-800' : isMe ? 'bg-gold text-black' : 'bg-gray-600';
+                    el.innerHTML = `
+                        <div class="text-xs text-gray-400 mb-1 ${isMe ? 'mr-2' : 'ml-2'}">${msg.senderName}</div>
+                        <div class="max-w-xs md:max-w-md p-3 rounded-lg ${bgColor}">
+                           <p>${msg.text}</p>
+                        </div>
+                    `;
+                    messagesEl.appendChild(el);
+                });
+                messagesEl.scrollTop = messagesEl.scrollHeight;
+            });
+        }
+        
+        // USER MANAGEMENT (Admin)
+        async function handleAddUserSubmit(e) {
+            e.preventDefault();
+            showLoader();
+            const name = document.getElementById('new-user-name').value;
+            const email = document.getElementById('new-user-email').value;
+            const role = document.getElementById('new-user-role').value;
+            
+            try {
+                // A backend (Cloud Function) is required for a seamless "create user" experience from an admin panel.
+                // This client-side approach is a workaround:
+                // 1. Send a password reset email. This forces the user to set their own password.
+                // 2. Create a "pending" user document in Firestore.
+                // 3. When the user signs in for the first time, the onAuthStateChanged logic will detect them,
+                //    create the real user document, and delete the pending one.
+                await sendPasswordResetEmail(auth, email);
+                
+                await setDoc(doc(db, `apps/${appId}/users_pending`, email), {
+                    name, email, role, createdAt: Timestamp.now()
+                });
+                
+                showToast('Password reset email sent to new user.');
+                e.target.reset();
+
+            } catch (error) {
+                console.error("Error adding user:", error);
+                showToast(error.message, true);
+            } finally {
+                hideLoader();
+            }
+        }
+
+        function listenForUsers() {
+             const usersCol = collection(db, `apps/${appId}/users`);
+             onSnapshot(usersCol, (snapshot) => {
+                 const listEl = document.getElementById('users-list');
+                 listEl.innerHTML = '';
+                 snapshot.forEach(doc => {
+                     const user = doc.data();
+                     const el = document.createElement('div');
+                     el.className = 'flex justify-between items-center p-2 border-b border-gray-700';
+                     el.innerHTML = `
+                        <div>
+                            <p class="font-bold">${user.name}</p>
+                            <p class="text-sm text-gray-400">${user.email} - ${user.role}</p>
+                        </div>
+                        <button class="text-red-500 delete-user-btn" data-id="${doc.id}"><i class="fas fa-trash"></i></button>
+                     `;
+                     listEl.appendChild(el);
+                 });
+             });
+        }
+        
+        // SOCIAL MEDIA
+        async function handleSocialMediaSubmit(e){
+            e.preventDefault();
+            showLoader();
+            const engagementData = {
+                date: Timestamp.fromDate(new Date(document.getElementById('engagement-date').value)),
+                engagements: parseInt(document.getElementById('engagement-count').value),
+                recordedBy: currentUser.name
+            };
+            try {
+                await addDoc(collection(db, `apps/${appId}/socialMediaStats`), engagementData);
+                showToast('Engagement data saved!');
+                e.target.reset();
+            } catch(error){
+                console.error("Error saving stats:", error);
+                showToast('Failed to save data.', true);
+            } finally {
+                hideLoader();
+            }
+        }
+
+        // NOTIFICATIONS
+        async function createNotification(message, roles) {
+            try {
+                const usersQuery = query(collection(db, `apps/${appId}/users`), where('role', 'in', roles));
+                const querySnapshot = await getDocs(usersQuery);
+                querySnapshot.forEach(async (userDoc) => {
+                    const userId = userDoc.id;
+                    await addDoc(collection(db, `apps/${appId}/users/${userId}/notifications`), {
+                        message,
+                        read: false,
+                        createdAt: Timestamp.now()
+                    });
+                });
+            } catch (error) {
+                console.error("Error creating notification:", error);
+            }
+        }
+
+        function listenForNotifications() {
+            if (!currentUser) return;
+            const notifCol = collection(db, `apps/${appId}/users/${currentUser.uid}/notifications`);
+            const q = query(notifCol, where('read', '==', false));
+            onSnapshot(q, (snapshot) => {
+                const badge = document.getElementById('notification-badge');
+                if (snapshot.size > 0) {
+                    badge.textContent = snapshot.size;
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                }
+            });
+        }
+
+        window.jsPDF = window.jspdf.jsPDF; // Make jsPDF available globally for the plugin
+    </script>
+</body>
+</html>
+
