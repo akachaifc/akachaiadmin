@@ -387,6 +387,12 @@
                                 <input id="customer-phone" type="tel" class="w-full p-2 bg-input rounded" required>
                             </div>
                              <div>
+                                <label>Jersey Type</label>
+                                <select id="jersey-type" class="w-full p-2 bg-input rounded" required>
+                                    <option value="">Select a type...</option>
+                                    <!-- Options populated by JS --></select>
+                            </div>
+                             <div>
                                 <label>Jersey Size</label>
                                 <select id="jersey-size" class="w-full p-2 bg-input rounded">
                                     <option>Small</option>
@@ -410,16 +416,24 @@
 
                 <!-- Jersey Pricing Content --><div id="jersey-pricing-content" class="content-section">
                     <div class="bg-card p-6 rounded-lg mb-6 border border-theme">
-                        <h3 class="text-xl font-bold mb-4">Set Jersey Price</h3>
-                        <form id="jersey-pricing-form" class="flex items-end gap-4">
+                        <h3 class="text-xl font-bold mb-4">Add or Update Jersey Type</h3>
+                        <form id="jersey-pricing-form" class="flex flex-wrap items-end gap-4">
+                            <div>
+                                <label for="jersey-type-name">Jersey Type Name</label>
+                                <input id="jersey-type-name" type="text" placeholder="e.g., Home Kit 2025" class="w-full p-2 bg-input rounded" required>
+                            </div>
                             <div>
                                 <label for="jersey-price-input">Price (UGX)</label>
                                 <input id="jersey-price-input" type="number" class="w-full p-2 bg-input rounded" required min="0">
                             </div>
-                            <button type="submit" class="bg-gold text-black font-bold py-2 px-4 rounded-md hover-bg-gold-dark">Save Price</button>
+                            <button type="submit" class="bg-gold text-black font-bold py-2 px-4 rounded-md hover-bg-gold-dark">Save / Update</button>
                         </form>
-                         <p class="text-sm mt-2 text-gray-500 dark:text-gray-400">This price will be used for all new jersey sale transactions.</p>
+                         <p class="text-sm mt-2 text-gray-500 dark:text-gray-400">This will add a new jersey type or update the price of an existing one.</p>
                     </div>
+
+                    <h2 class="text-2xl font-semibold mb-4">Current Jersey Prices</h2>
+                    <div id="jersey-types-list" class="bg-card p-4 rounded-lg border border-theme">
+                        <!-- Jersey types will be dynamically added here --></div>
                 </div>
 
                 <!-- Player Registration Content --><div id="player-registration-content" class="content-section">
@@ -490,7 +504,8 @@
             orderBy,
             Timestamp,
             where,
-            runTransaction
+            runTransaction,
+            deleteField
         } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         // --- PLACEHOLDERS & CONFIG ---
@@ -530,7 +545,7 @@
         let engagementsChart = null;
         const loadingOverlay = document.getElementById('loading-overlay');
         let inactivityTimer;
-        let JERSEY_PRICE = 50000; // Default price, will be updated from Firestore
+        let jerseyPrices = {};
         
         // --- INACTIVITY LOGOUT ---
         function resetInactivityTimer() {
@@ -809,7 +824,7 @@
             if(activeLink) activeLink.classList.add('bg-gold', 'text-black', 'dark:text-black');
 
             // Initialize all data listeners
-            listenForJerseyPrice();
+            listenForJerseyTypes();
             loadDashboardData();
             listenForRequisitions();
             listenForChatMessages();
@@ -938,7 +953,7 @@
             document.getElementById('add-user-form').onsubmit = handleAddUserSubmit;
             document.getElementById('social-media-form').onsubmit = handleSocialMediaSubmit;
             document.getElementById('jersey-order-form').onsubmit = handleJerseyOrderSubmit;
-            document.getElementById('jersey-pricing-form').onsubmit = handleJerseyPriceSubmit;
+            document.getElementById('jersey-pricing-form').onsubmit = handleJerseyTypeSubmit;
             document.getElementById('player-registration-form').onsubmit = handlePlayerRegistrationSubmit;
             document.getElementById('generate-report-btn').onclick = handleGenerateReport;
         }
@@ -1139,7 +1154,12 @@
                     const orderDoc = await getDoc(doc(db, `apps/${appId}/jerseyOrders`, orderId));
                     if(orderDoc.exists()){
                         const orderData = orderDoc.data();
-                        await createAutomatedTransaction(`Jersey Sale: #${orderData.orderNumber}`, JERSEY_PRICE, 'credit');
+                        const price = jerseyPrices[orderData.jerseyType] || 0;
+                        if (price > 0) {
+                            await createAutomatedTransaction(`Jersey Sale: #${orderData.orderNumber} (${orderData.jerseyType})`, price, 'credit');
+                        } else {
+                            showToast(`Could not log transaction: Price for "${orderData.jerseyType}" is not set.`, true);
+                        }
                     }
                 }
                 // ... (rest of logic for email notification)
@@ -1147,44 +1167,95 @@
         });
 
         // JERSEY PRICING
-        async function handleJerseyPriceSubmit(e) {
+        async function handleJerseyTypeSubmit(e) {
             e.preventDefault();
             showLoader();
             try {
+                const typeName = document.getElementById('jersey-type-name').value.trim();
                 const newPrice = parseFloat(document.getElementById('jersey-price-input').value);
-                if (isNaN(newPrice) || newPrice < 0) {
-                    showToast("Please enter a valid price.", true);
+                
+                if (!typeName || isNaN(newPrice) || newPrice < 0) {
+                    showToast("Please enter a valid type name and price.", true);
                     return;
                 }
-                await setDoc(doc(db, `apps/${appId}/settings`, 'pricing'), { jerseyPrice: newPrice });
-                showToast("Jersey price updated successfully!");
+
+                const pricingDocRef = doc(db, `apps/${appId}/settings`, 'pricing');
+                await setDoc(pricingDocRef, { 
+                    jerseyPrices: { [typeName]: newPrice } 
+                }, { merge: true });
+
+                showToast(`Jersey type '${typeName}' saved/updated successfully!`);
+                e.target.reset();
+
             } catch (error) {
-                console.error("Error updating jersey price:", error);
-                showToast("Failed to update price.", true);
+                console.error("Error saving jersey type:", error);
+                showToast("Failed to save jersey type.", true);
             } finally {
                 hideLoader();
             }
         }
 
-        async function loadCurrentJerseyPrice() {
-            try {
-                const priceDoc = await getDoc(doc(db, `apps/${appId}/settings`, 'pricing'));
-                if (priceDoc.exists()) {
-                    document.getElementById('jersey-price-input').value = priceDoc.data().jerseyPrice;
+        function listenForJerseyTypes() {
+            onSnapshot(doc(db, `apps/${appId}/settings`, 'pricing'), (docSnapshot) => {
+                const pricingData = docSnapshot.data();
+                jerseyPrices = (pricingData && pricingData.jerseyPrices) ? pricingData.jerseyPrices : {};
+                
+                // Populate pricing page list
+                const listEl = document.getElementById('jersey-types-list');
+                const typeDropdown = document.getElementById('jersey-type');
+                
+                if (listEl) {
+                    listEl.innerHTML = '';
+                    if (Object.keys(jerseyPrices).length === 0) {
+                        listEl.innerHTML = '<p>No jersey types defined yet.</p>';
+                    } else {
+                        Object.entries(jerseyPrices).forEach(([name, price]) => {
+                            listEl.innerHTML += `
+                                <div class="flex justify-between items-center p-2 border-b border-theme">
+                                    <div>
+                                        <p class="font-bold">${name}</p>
+                                        <p class="text-sm">${formatCurrency(price)}</p>
+                                    </div>
+                                    <button class="text-red-500 delete-jersey-type-btn" data-type-name="${name}"><i class="fas fa-trash"></i></button>
+                                </div>
+                            `;
+                        });
+                    }
                 }
-            } catch (error) {
-                console.error("Could not load jersey price:", error);
-            }
-        }
 
-        function listenForJerseyPrice() {
-            onSnapshot(doc(db, `apps/${appId}/settings`, 'pricing'), (doc) => {
-                if (doc.exists()) {
-                    JERSEY_PRICE = doc.data().jerseyPrice;
-                    console.log(`Global Jersey Price updated to: ${JERSEY_PRICE}`);
+                // Populate order form dropdown
+                if (typeDropdown) {
+                    const currentSelection = typeDropdown.value;
+                    typeDropdown.innerHTML = '<option value="">Select a type...</option>';
+                    Object.keys(jerseyPrices).forEach(name => {
+                        typeDropdown.innerHTML += `<option value="${name}">${name}</option>`;
+                    });
+                    typeDropdown.value = currentSelection;
                 }
             });
         }
+
+        document.getElementById('jersey-types-list').addEventListener('click', async e => {
+            const deleteBtn = e.target.closest('.delete-jersey-type-btn');
+            if (!deleteBtn) return;
+
+            const typeName = deleteBtn.dataset.typeName;
+            if (confirm(`Are you sure you want to delete the jersey type "${typeName}"?`)) {
+                showLoader();
+                try {
+                    const pricingDocRef = doc(db, `apps/${appId}/settings`, 'pricing');
+                    await updateDoc(pricingDocRef, {
+                        [`jerseyPrices.${typeName}`]: deleteField()
+                    });
+                    showToast(`Deleted "${typeName}" successfully.`);
+                } catch (error) {
+                    console.error("Error deleting jersey type:", error);
+                    showToast("Failed to delete.", true);
+                } finally {
+                    hideLoader();
+                }
+            }
+        });
 
 
         // PLAYER REGISTRATION (REVISED)
