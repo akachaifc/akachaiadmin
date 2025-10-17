@@ -88,9 +88,15 @@
                     <label for="email" class="block text-sm font-medium mb-2">Email</label>
                     <input type="email" id="login-email" class="w-full p-3 bg-gray-700 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-gold" required>
                 </div>
-                <div class="mb-6">
+                <div class="mb-4 relative">
                     <label for="password" class="block text-sm font-medium mb-2">Password</label>
-                    <input type="password" id="login-password" class="w-full p-3 bg-gray-700 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-gold" required>
+                    <input type="password" id="login-password" class="w-full p-3 bg-gray-700 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-gold pr-10" required>
+                    <span id="toggle-password" class="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer text-gray-400" style="top: 1.875rem;">
+                        <i class="fas fa-eye"></i>
+                    </span>
+                </div>
+                 <div class="text-right mb-6">
+                    <a href="#" id="forgot-password-link" class="text-sm text-yellow-400 hover:text-yellow-200 hover:underline">Forgot Password?</a>
                 </div>
                 <button type="submit" class="w-full bg-gold text-black font-bold py-3 rounded-md hover-bg-gold-dark transition-colors">Login</button>
             </form>
@@ -117,15 +123,15 @@
 
             <!-- Main Content Area -->
             <div class="flex-1 p-6 md:p-8 overflow-y-auto">
-                <header class="flex justify-between items-center mb-6">
-                    <h1 id="page-title" class="text-3xl font-bold gold-text">Dashboard</h1>
+                <header class="flex justify-between items-start mb-8">
+                    <h1 id="page-title" class="text-5xl font-extrabold gold-text">Dashboard</h1>
                     <div class="flex items-center gap-4">
                         <div class="relative">
-                             <i class="fas fa-bell text-xl cursor-pointer" id="notification-icon"></i>
+                             <i class="fas fa-bell text-2xl cursor-pointer text-gray-300" id="notification-icon"></i>
                              <span id="notification-badge" class="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center hidden">0</span>
                         </div>
                         <div id="user-profile" class="text-right">
-                            <p class="font-semibold" id="user-name-display"></p>
+                            <p class="font-semibold text-lg" id="user-name-display"></p>
                             <p class="text-sm text-gray-400" id="user-role-display"></p>
                         </div>
                     </div>
@@ -133,11 +139,11 @@
 
                 <!-- Dashboard Content -->
                 <div id="dashboard-content" class="content-section active">
-                    <h2 class="text-2xl font-semibold mb-4">Weekly Social Media Engagements</h2>
-                    <div class="bg-card p-4 rounded-lg shadow-md border border-gray-700">
+                    <h2 class="text-2xl font-semibold mb-4 text-gray-200">Monthly Social Media Engagement Rates</h2>
+                    <div class="bg-gray-900 p-4 rounded-lg">
                         <canvas id="engagements-chart"></canvas>
                     </div>
-                    <div id="admin-alerts-section" class="mt-6">
+                    <div id="admin-alerts-section" class="mt-8">
                         <h2 class="text-2xl font-semibold mb-4">Send Important Alert</h2>
                         <div class="bg-card p-4 rounded-lg shadow-md border border-gray-700">
                            <textarea id="alert-message" class="w-full p-3 bg-gray-700 rounded-md border border-gray-600" rows="3" placeholder="Type your alert message here..."></textarea>
@@ -152,7 +158,6 @@
                     <div id="new-requisition-form-container" class="bg-card p-6 rounded-lg mb-6 hidden">
                         <h3 class="text-xl font-bold mb-4">Requisition Form</h3>
                         <form id="requisition-form">
-                             <!-- Form fields here -->
                              <input type="text" id="req-name" placeholder="Your Name" class="w-full p-2 mb-2 bg-gray-700 rounded" required>
                              <textarea id="req-reason" placeholder="Reason for Requisition" class="w-full p-2 mb-2 bg-gray-700 rounded" required></textarea>
                              <div id="req-items-container">
@@ -275,7 +280,11 @@
                                     <option value="treasurer">Treasurer</option>
                                     <option value="president">President</option>
                                     <option value="admin">Admin</option>
-                                    <option value="social_media">Social Media</option>
+                                    <option value="social_media_x">Social Media (X)</option>
+                                    <option value="social_media_ig_main">Social Media (Instagram Main)</option>
+                                    <option value="social_media_ig_fan">Social Media (Instagram Fan)</option>
+                                    <option value="social_media_whatsapp">Social Media (WhatsApp)</option>
+                                    <option value="social_media_tiktok">Social Media (TikTok)</option>
                                     <option value="treasury_staff">Treasury Staff</option>
                                 </select>
                             </div>
@@ -291,20 +300,47 @@
 
                 <!-- Social Media Stats Content -->
                 <div id="social-media-content" class="content-section">
-                    <h2 class="text-2xl font-semibold mb-4">Record Social Media Engagements</h2>
+                    <h2 class="text-2xl font-semibold mb-4">Record Social Media Engagements for <span id="current-month-year"></span></h2>
                     <div class="bg-card p-6 rounded-lg">
                         <form id="social-media-form">
-                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                 <div>
-                                    <label>Date</label>
-                                    <input id="engagement-date" type="date" class="w-full p-2 bg-gray-700 rounded" required>
-                                </div>
-                                <div>
-                                    <label>Total Engagements (Likes, Shares, Comments)</label>
-                                    <input id="engagement-count" type="number" class="w-full p-2 bg-gray-700 rounded" required min="0">
-                                </div>
+                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                 <div class="flex items-center gap-3">
+                                    <i class="fab fa-twitter text-2xl w-6 text-center"></i>
+                                    <div>
+                                        <label for="engagement-x" class="font-semibold">X / Twitter (%)</label>
+                                        <input id="engagement-x" type="number" class="w-full p-2 bg-gray-700 rounded disabled:bg-gray-800 disabled:cursor-not-allowed" required min="0" step="0.1" placeholder="e.g., 2.3" disabled>
+                                    </div>
+                                 </div>
+                                 <div class="flex items-center gap-3">
+                                    <i class="fab fa-instagram text-2xl w-6 text-center"></i>
+                                    <div>
+                                        <label for="engagement-ig-main" class="font-semibold">Instagram Main (%)</label>
+                                        <input id="engagement-ig-main" type="number" class="w-full p-2 bg-gray-700 rounded disabled:bg-gray-800 disabled:cursor-not-allowed" required min="0" step="0.1" placeholder="e.g., 5.0" disabled>
+                                    </div>
+                                 </div>
+                                 <div class="flex items-center gap-3">
+                                     <i class="fab fa-instagram-square text-2xl w-6 text-center"></i>
+                                     <div>
+                                        <label for="engagement-ig-fan" class="font-semibold">Instagram Fan (%)</label>
+                                        <input id="engagement-ig-fan" type="number" class="w-full p-2 bg-gray-700 rounded disabled:bg-gray-800 disabled:cursor-not-allowed" required min="0" step="0.1" placeholder="e.g., 4.9" disabled>
+                                     </div>
+                                 </div>
+                                 <div class="flex items-center gap-3">
+                                     <i class="fab fa-whatsapp text-2xl w-6 text-center"></i>
+                                     <div>
+                                        <label for="engagement-whatsapp" class="font-semibold">WhatsApp (%)</label>
+                                        <input id="engagement-whatsapp" type="number" class="w-full p-2 bg-gray-700 rounded disabled:bg-gray-800 disabled:cursor-not-allowed" required min="0" step="0.1" placeholder="e.g., 3.0" disabled>
+                                     </div>
+                                 </div>
+                                 <div class="flex items-center gap-3">
+                                     <i class="fab fa-tiktok text-2xl w-6 text-center"></i>
+                                     <div>
+                                        <label for="engagement-tiktok" class="font-semibold">TikTok (%)</label>
+                                        <input id="engagement-tiktok" type="number" class="w-full p-2 bg-gray-700 rounded disabled:bg-gray-800 disabled:cursor-not-allowed" required min="0" step="0.1" placeholder="e.g., 3.6" disabled>
+                                     </div>
+                                 </div>
                              </div>
-                              <button type="submit" class="mt-4 bg-gold text-black font-bold py-2 px-6 rounded-md hover-bg-gold-dark">Save Data</button>
+                              <button type="submit" class="mt-6 bg-gold text-black font-bold py-2 px-6 rounded-md hover-bg-gold-dark">Save Monthly Data</button>
                         </form>
                     </div>
                 </div>
@@ -425,12 +461,10 @@
                     let userDoc = await getDoc(userDocRef);
 
                     if (!userDoc.exists()) {
-                        // This might be a new user created by an admin, signing in for the first time.
                         const pendingUserDocRef = doc(db, `apps/${appId}/users_pending`, user.email);
                         const pendingUserDoc = await getDoc(pendingUserDocRef);
 
                         if (pendingUserDoc.exists()) {
-                            // First login confirmed. Create the official user document.
                             const pendingData = pendingUserDoc.data();
                             await setDoc(userDocRef, {
                                 name: pendingData.name,
@@ -439,10 +473,7 @@
                                 createdAt: pendingData.createdAt
                             });
                             
-                            // Clean up by deleting the pending document.
                             await deleteDoc(pendingUserDocRef);
-
-                            // Re-fetch the newly created user document.
                             userDoc = await getDoc(userDocRef);
                         } else {
                              throw new Error("User document not found and no pending registration was found for this email.");
@@ -451,7 +482,6 @@
 
                     currentUser = { uid: user.uid, email: user.email, ...userDoc.data() };
                     currentUserRole = currentUser.role || 'user';
-                    console.log("User logged in:", currentUser.name, "Role:", currentUserRole);
                     await setupUIForUser();
                     loginSection.classList.add('hidden');
                     appSection.classList.remove('hidden');
@@ -479,13 +509,57 @@
                 await signInWithEmailAndPassword(auth, email, password);
                 loginError.textContent = '';
             } catch (error) {
-                loginError.textContent = error.message;
+                let errorMessage = 'An unknown error occurred.';
+                switch (error.code) {
+                    case 'auth/invalid-email':
+                        errorMessage = 'Please enter a valid email address.';
+                        break;
+                    case 'auth/user-not-found':
+                    case 'auth/wrong-password':
+                    case 'auth/invalid-credential':
+                        errorMessage = 'Incorrect email or password. Please try again.';
+                        break;
+                    case 'auth/too-many-requests':
+                        errorMessage = 'Access temporarily disabled due to too many failed login attempts. Please reset your password or try again later.';
+                        break;
+                    default:
+                        errorMessage = error.message;
+                        break;
+                }
+                loginError.textContent = errorMessage;
             } finally {
                 hideLoader();
             }
         });
 
         logoutBtn.addEventListener('click', () => signOut(auth));
+
+        document.getElementById('forgot-password-link').addEventListener('click', (e) => {
+            e.preventDefault();
+            const email = prompt("Please enter your email address to receive a password reset link:");
+            if (email) {
+                showLoader();
+                sendPasswordResetEmail(auth, email)
+                    .then(() => {
+                        hideLoader();
+                        showToast("Password reset email sent! Please check your inbox.");
+                    })
+                    .catch((error) => {
+                        hideLoader();
+                        showToast(`Error: ${error.message}`, true);
+                    });
+            }
+        });
+
+        const togglePassword = document.getElementById('toggle-password');
+        const passwordInput = document.getElementById('login-password');
+        togglePassword.addEventListener('click', () => {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            togglePassword.querySelector('i').classList.toggle('fa-eye');
+            togglePassword.querySelector('i').classList.toggle('fa-eye-slash');
+        });
+
 
         // --- UI SETUP & DATA LOADING ---
         const setupUIForUser = async () => {
@@ -509,8 +583,9 @@
                 navLinks += `<a href="#" data-page="finances-content" class="nav-link block py-2 px-4 rounded hover:bg-gray-700"><i class="fas fa-coins w-6"></i> Finances</a>`;
                 navLinks += `<a href="#" data-page="receipts-content" class="nav-link block py-2 px-4 rounded hover:bg-gray-700"><i class="fas fa-receipt w-6"></i> Issue Receipts</a>`;
             }
-
-            if (['admin', 'social_media'].includes(currentUserRole)) {
+            
+            const isSocialMediaManager = currentUserRole.startsWith('social_media');
+            if (currentUserRole === 'admin' || isSocialMediaManager) {
                 navLinks += `<a href="#" data-page="social-media-content" class="nav-link block py-2 px-4 rounded hover:bg-gray-700"><i class="fas fa-chart-line w-6"></i> Social Stats</a>`;
             }
             
@@ -526,8 +601,6 @@
             });
             document.querySelector('.nav-link[data-page="dashboard-content"]').classList.add('bg-gold', 'text-black');
 
-
-            // Load data for all relevant sections
             loadDashboardData();
             listenForRequisitions();
             listenForChatMessages();
@@ -539,45 +612,82 @@
             if (currentUserRole === 'admin') {
                 listenForUsers();
             }
-
-            // Bind events
             bindStaticEvents();
+            setupSocialMediaPermissions();
         };
 
         // --- DASHBOARD ---
         const loadDashboardData = () => {
-            const statsCol = collection(db, `apps/${appId}/socialMediaStats`);
-            const q = query(statsCol, orderBy('date', 'desc'));
+            const monthYear = new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
+            const docId = new Date().toISOString().slice(0, 7); // e.g., "2025-10"
+            const statsDocRef = doc(db, `apps/${appId}/socialMediaRates`, docId);
 
-            onSnapshot(q, (snapshot) => {
-                const labels = [];
-                const data = [];
-                snapshot.docs.forEach(doc => {
-                    const stat = doc.data();
-                    const date = stat.date.toDate();
-                    labels.unshift(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
-                    data.unshift(stat.engagements);
-                });
+            onSnapshot(statsDocRef, (doc) => {
+                const data = doc.exists() ? doc.data() : {
+                    x: 0, ig_main: 0, ig_fan: 0, whatsapp: 0, tiktok: 0 // Default values if no data for the month
+                };
+                
+                if(!doc.exists()){
+                    console.warn(`No social media data found for ${monthYear}. Displaying zeros. Please update data on the Social Stats page.`);
+                }
+
+                const platforms = ['X', 'Instagram Main', 'Instagram Fan', 'WhatsApp', 'TikTok'];
+                const engagementData = [data.x, data.ig_main, data.ig_fan, data.whatsapp, data.tiktok];
 
                 const ctx = document.getElementById('engagements-chart').getContext('2d');
                 if (engagementsChart) engagementsChart.destroy();
+                
+                Chart.defaults.color = '#9CA3AF';
+                
                 engagementsChart = new Chart(ctx, {
-                    type: 'line',
+                    type: 'bar', // Changed from 'line' to 'bar'
                     data: {
-                        labels,
+                        labels: platforms,
                         datasets: [{
-                            label: 'Engagements',
-                            data,
-                            borderColor: 'rgba(212, 175, 55, 1)',
-                            backgroundColor: 'rgba(212, 175, 55, 0.2)',
-                            fill: true,
-                            tension: 0.4
+                            label: `Engagement Rate for ${monthYear} (%)`,
+                            data: engagementData,
+                            backgroundColor: [
+                                'rgba(255, 255, 255, 0.8)', // X (White/Gray)
+                                'rgba(193, 53, 132, 0.8)', // Instagram (Pink)
+                                'rgba(131, 58, 180, 0.8)', // Instagram (Purple)
+                                'rgba(37, 211, 102, 0.8)',  // WhatsApp (Green)
+                                'rgba(255, 0, 80, 0.8)'    // TikTok (Red/Pink)
+                            ],
+                            borderColor: '#333',
+                            borderWidth: 1
                         }]
                     },
-                    options: { responsive: true, scales: { y: { beginAtZero: true } } }
+                    options: { 
+                        indexAxis: 'y', // To make it a horizontal bar chart
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: false // Hiding legend as per screenshot
+                            }
+                        },
+                        scales: { 
+                            x: { 
+                                beginAtZero: true,
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: {
+                                    callback: function(value) {
+                                        return value + '%' // Add percentage sign to x-axis
+                                    }
+                                }
+                            },
+                            y: {
+                                grid: {
+                                    display: false
+                                }
+                            }
+                        } 
+                    }
                 });
             });
         };
+
         document.getElementById('send-alert-btn').addEventListener('click', async () => {
             const message = document.getElementById('alert-message').value;
             if (!message.trim()) return;
@@ -810,19 +920,16 @@
             const securityCode = `SEC-${crypto.randomUUID()}`;
 
             try {
-                // 1. Generate PDF
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF();
 
-                // Gold and Black Theme
-                doc.setFillColor(18, 18, 18); // Black
+                doc.setFillColor(18, 18, 18);
                 doc.rect(0, 0, 210, 297, 'F');
-                doc.setTextColor(212, 175, 55); // Gold
+                doc.setTextColor(212, 175, 55);
                 doc.setFont('helvetica', 'bold');
                 doc.setFontSize(22);
                 doc.text('AKACHAI FC - OFFICIAL RECEIPT', 105, 20, null, null, 'center');
-
-                doc.setTextColor(224, 224, 224); // Light Gray
+                doc.setTextColor(224, 224, 224);
                 doc.setFontSize(12);
                 doc.text(`Receipt #: ${receiptNumber}`, 20, 40);
                 doc.text(`Date: ${new Date().toLocaleDateString()}`, 150, 40);
@@ -832,19 +939,10 @@
                     head: [['Payer Name', 'Payment For', 'Amount']],
                     body: [[payerName, purpose, formatCurrency(amount)]],
                     theme: 'grid',
-                    styles: {
-                        fillColor: [18, 18, 18],
-                        textColor: [224, 224, 224],
-                        lineColor: [212, 175, 55]
-                    },
-                    headStyles: {
-                        fillColor: [212, 175, 55],
-                        textColor: [0, 0, 0],
-                        fontStyle: 'bold'
-                    }
+                    styles: { fillColor: [18, 18, 18], textColor: [224, 224, 224], lineColor: [212, 175, 55] },
+                    headStyles: { fillColor: [212, 175, 55], textColor: [0, 0, 0], fontStyle: 'bold' }
                 });
 
-                // 2. Generate QR Code
                 const qr = qrcode(0, 'L');
                 qr.addData(securityCode);
                 qr.make();
@@ -855,12 +953,10 @@
                 
                 const pdfBase64 = doc.output('datauristring').split(',')[1];
                 
-                // 3. Store in Firestore
                 await addDoc(collection(db, `apps/${appId}/receipts`), {
                     receiptNumber, securityCode, payerName, payerEmail, amount, purpose, createdAt: Timestamp.now()
                 });
                 
-                // 4. Send Email via EmailJS
                 const templateParams = {
                     to_name: payerName,
                     to_email: payerEmail,
@@ -936,12 +1032,6 @@
             const role = document.getElementById('new-user-role').value;
             
             try {
-                // A backend (Cloud Function) is required for a seamless "create user" experience from an admin panel.
-                // This client-side approach is a workaround:
-                // 1. Send a password reset email. This forces the user to set their own password.
-                // 2. Create a "pending" user document in Firestore.
-                // 3. When the user signs in for the first time, the onAuthStateChanged logic will detect them,
-                //    create the real user document, and delete the pending one.
                 await sendPasswordResetEmail(auth, email);
                 
                 await setDoc(doc(db, `apps/${appId}/users_pending`, email), {
@@ -978,28 +1068,132 @@
                      listEl.appendChild(el);
                  });
              });
-        }
+         }
         
+        function setupSocialMediaPermissions() {
+            const form = document.getElementById('social-media-form');
+            const inputs = {
+                x: form.querySelector('#engagement-x'),
+                ig_main: form.querySelector('#engagement-ig-main'),
+                ig_fan: form.querySelector('#engagement-ig-fan'),
+                whatsapp: form.querySelector('#engagement-whatsapp'),
+                tiktok: form.querySelector('#engagement-tiktok'),
+            };
+
+            // Disable all by default (already done in HTML, but good practice)
+            Object.values(inputs).forEach(input => input.disabled = true);
+
+            // Enable inputs based on role
+            if (currentUserRole === 'admin') {
+                Object.values(inputs).forEach(input => input.disabled = false);
+            } else {
+                switch (currentUserRole) {
+                    case 'social_media_x':
+                        inputs.x.disabled = false;
+                        break;
+                    case 'social_media_ig_main':
+                        inputs.ig_main.disabled = false;
+                        break;
+                    case 'social_media_ig_fan':
+                        inputs.ig_fan.disabled = false;
+                        break;
+                    case 'social_media_whatsapp':
+                        inputs.whatsapp.disabled = false;
+                        break;
+                    case 'social_media_tiktok':
+                        inputs.tiktok.disabled = false;
+                        break;
+                }
+            }
+        }
+ 
         // SOCIAL MEDIA
-        async function handleSocialMediaSubmit(e){
+        async function handleSocialMediaSubmit(e) {
             e.preventDefault();
             showLoader();
-            const engagementData = {
-                date: Timestamp.fromDate(new Date(document.getElementById('engagement-date').value)),
-                engagements: parseInt(document.getElementById('engagement-count').value),
-                recordedBy: currentUser.name
-            };
+            const docId = new Date().toISOString().slice(0, 7); // e.g., "2025-10"
+            const docRef = doc(db, `apps/${appId}/socialMediaRates`, docId);
+
             try {
-                await addDoc(collection(db, `apps/${appId}/socialMediaStats`), engagementData);
-                showToast('Engagement data saved!');
-                e.target.reset();
-            } catch(error){
+                // Fetch existing data first to prevent overwriting other platforms' stats
+                const docSnap = await getDoc(docRef);
+                const existingData = docSnap.exists() ? docSnap.data() : {};
+
+                const updates = {};
+
+                // Determine which fields to update based on user role
+                if (currentUserRole === 'admin') {
+                    updates.x = parseFloat(document.getElementById('engagement-x').value) || 0;
+                    updates.ig_main = parseFloat(document.getElementById('engagement-ig-main').value) || 0;
+                    updates.ig_fan = parseFloat(document.getElementById('engagement-ig-fan').value) || 0;
+                    updates.whatsapp = parseFloat(document.getElementById('engagement-whatsapp').value) || 0;
+                    updates.tiktok = parseFloat(document.getElementById('engagement-tiktok').value) || 0;
+                } else {
+                    switch (currentUserRole) {
+                        case 'social_media_x':
+                            updates.x = parseFloat(document.getElementById('engagement-x').value) || 0;
+                            break;
+                        case 'social_media_ig_main':
+                            updates.ig_main = parseFloat(document.getElementById('engagement-ig-main').value) || 0;
+                            break;
+                        case 'social_media_ig_fan':
+                            updates.ig_fan = parseFloat(document.getElementById('engagement-ig-fan').value) || 0;
+                            break;
+                        case 'social_media_whatsapp':
+                            updates.whatsapp = parseFloat(document.getElementById('engagement-whatsapp').value) || 0;
+                            break;
+                        case 'social_media_tiktok':
+                            updates.tiktok = parseFloat(document.getElementById('engagement-tiktok').value) || 0;
+                            break;
+                    }
+                }
+
+                const finalData = {
+                    ...existingData,
+                    ...updates,
+                    lastUpdatedBy: currentUser.name,
+                    lastUpdatedAt: Timestamp.now()
+                };
+
+                await setDoc(docRef, finalData);
+                showToast('Monthly engagement data saved!');
+            } catch (error) {
                 console.error("Error saving stats:", error);
                 showToast('Failed to save data.', true);
             } finally {
                 hideLoader();
             }
         }
+        
+        // EDIT START: Add logic to populate Social Media form with current data
+        function loadSocialMediaFormData() {
+            const monthYear = new Date().toLocaleString('default', { month: 'long', year: 'numeric' });
+            document.getElementById('current-month-year').textContent = monthYear;
+
+            const docId = new Date().toISOString().slice(0, 7);
+            const statsDocRef = doc(db, `apps/${appId}/socialMediaRates`, docId);
+            
+            getDoc(statsDocRef).then(doc => {
+                if (doc.exists()) {
+                    const data = doc.data();
+                    document.getElementById('engagement-x').value = data.x || '';
+                    document.getElementById('engagement-ig-main').value = data.ig_main || '';
+                    document.getElementById('engagement-ig-fan').value = data.ig_fan || '';
+                    document.getElementById('engagement-whatsapp').value = data.whatsapp || '';
+                    document.getElementById('engagement-tiktok').value = data.tiktok || '';
+                }
+            });
+        }
+        
+        // Call this when user navigates to the social media page
+        const originalShowPage = showPage;
+        showPage = (pageId) => {
+            originalShowPage(pageId);
+            if (pageId === 'social-media-content') {
+                loadSocialMediaFormData();
+            }
+        };
+        // EDIT END
 
         // NOTIFICATIONS
         async function createNotification(message, roles) {
@@ -1038,5 +1232,4 @@
     </script>
 </body>
 </html>
-
 
