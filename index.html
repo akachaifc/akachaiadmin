@@ -408,6 +408,20 @@
                         <!-- Jersey orders will be dynamically added here --></div>
                 </div>
 
+                <!-- Jersey Pricing Content --><div id="jersey-pricing-content" class="content-section">
+                    <div class="bg-card p-6 rounded-lg mb-6 border border-theme">
+                        <h3 class="text-xl font-bold mb-4">Set Jersey Price</h3>
+                        <form id="jersey-pricing-form" class="flex items-end gap-4">
+                            <div>
+                                <label for="jersey-price-input">Price (UGX)</label>
+                                <input id="jersey-price-input" type="number" class="w-full p-2 bg-input rounded" required min="0">
+                            </div>
+                            <button type="submit" class="bg-gold text-black font-bold py-2 px-4 rounded-md hover-bg-gold-dark">Save Price</button>
+                        </form>
+                         <p class="text-sm mt-2 text-gray-500 dark:text-gray-400">This price will be used for all new jersey sale transactions.</p>
+                    </div>
+                </div>
+
                 <!-- Player Registration Content --><div id="player-registration-content" class="content-section">
                     <div class="bg-card p-6 rounded-lg mb-6 border border-theme">
                         <h3 class="text-xl font-bold mb-4">Register New Player</h3>
@@ -491,9 +505,6 @@
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : providedFirebaseConfig;
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'akachai-fc-portal';
 
-        // --- APP CONSTANTS ---
-        const JERSEY_PRICE = 50000; // Price per jersey in UGX
-
         // --- EMAILJS CONFIG: Your actual credentials ---
         const EMAILJS_SERVICE_ID = "service_9nzfwtm";
         const EMAILJS_MASTER_TEMPLATE_ID = "template_2uv7tei"; 
@@ -519,6 +530,7 @@
         let engagementsChart = null;
         const loadingOverlay = document.getElementById('loading-overlay');
         let inactivityTimer;
+        let JERSEY_PRICE = 50000; // Default price, will be updated from Firestore
         
         // --- INACTIVITY LOGOUT ---
         function resetInactivityTimer() {
@@ -616,6 +628,9 @@
             }
             if (pageId === 'social-media-content') {
                 loadSocialMediaFormData();
+            }
+            if (pageId === 'jersey-pricing-content') {
+                loadCurrentJerseyPrice();
             }
             // Close sidebar on mobile after navigation
             if (window.innerWidth < 768) {
@@ -758,6 +773,10 @@
                     <a href="#" data-page="jersey-orders-content" class="nav-link flex items-center gap-4 py-2 px-4 rounded hover:bg-gray-700"><i class="fas fa-tshirt w-6 text-center"></i><span class="nav-text">Jersey Orders</span></a>
                 `;
             }
+
+             if (['admin', 'treasurer'].includes(currentUserRole)) {
+                navLinks += `<a href="#" data-page="jersey-pricing-content" class="nav-link flex items-center gap-4 py-2 px-4 rounded hover:bg-gray-700"><i class="fas fa-dollar-sign w-6 text-center"></i><span class="nav-text">Jersey Pricing</span></a>`;
+            }
             
             const isSocialMediaManager = currentUserRole.startsWith('social_media');
             if (['admin', 'president'].includes(currentUserRole) || isSocialMediaManager) {
@@ -790,6 +809,7 @@
             if(activeLink) activeLink.classList.add('bg-gold', 'text-black', 'dark:text-black');
 
             // Initialize all data listeners
+            listenForJerseyPrice();
             loadDashboardData();
             listenForRequisitions();
             listenForChatMessages();
@@ -918,6 +938,7 @@
             document.getElementById('add-user-form').onsubmit = handleAddUserSubmit;
             document.getElementById('social-media-form').onsubmit = handleSocialMediaSubmit;
             document.getElementById('jersey-order-form').onsubmit = handleJerseyOrderSubmit;
+            document.getElementById('jersey-pricing-form').onsubmit = handleJerseyPriceSubmit;
             document.getElementById('player-registration-form').onsubmit = handlePlayerRegistrationSubmit;
             document.getElementById('generate-report-btn').onclick = handleGenerateReport;
         }
@@ -1124,6 +1145,47 @@
                 // ... (rest of logic for email notification)
             }
         });
+
+        // JERSEY PRICING
+        async function handleJerseyPriceSubmit(e) {
+            e.preventDefault();
+            showLoader();
+            try {
+                const newPrice = parseFloat(document.getElementById('jersey-price-input').value);
+                if (isNaN(newPrice) || newPrice < 0) {
+                    showToast("Please enter a valid price.", true);
+                    return;
+                }
+                await setDoc(doc(db, `apps/${appId}/settings`, 'pricing'), { jerseyPrice: newPrice });
+                showToast("Jersey price updated successfully!");
+            } catch (error) {
+                console.error("Error updating jersey price:", error);
+                showToast("Failed to update price.", true);
+            } finally {
+                hideLoader();
+            }
+        }
+
+        async function loadCurrentJerseyPrice() {
+            try {
+                const priceDoc = await getDoc(doc(db, `apps/${appId}/settings`, 'pricing'));
+                if (priceDoc.exists()) {
+                    document.getElementById('jersey-price-input').value = priceDoc.data().jerseyPrice;
+                }
+            } catch (error) {
+                console.error("Could not load jersey price:", error);
+            }
+        }
+
+        function listenForJerseyPrice() {
+            onSnapshot(doc(db, `apps/${appId}/settings`, 'pricing'), (doc) => {
+                if (doc.exists()) {
+                    JERSEY_PRICE = doc.data().jerseyPrice;
+                    console.log(`Global Jersey Price updated to: ${JERSEY_PRICE}`);
+                }
+            });
+        }
+
 
         // PLAYER REGISTRATION (REVISED)
         async function getNextPlayerId() { /* ... same as before ... */ }
