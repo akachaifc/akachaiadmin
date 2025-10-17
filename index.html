@@ -307,36 +307,36 @@
                                  <div class="flex items-center gap-3">
                                     <i class="fab fa-twitter text-2xl w-6 text-center"></i>
                                     <div>
-                                        <label for="engagement-x" class="font-semibold">X / Twitter (%)</label>
-                                        <input id="engagement-x" type="number" class="w-full p-2 bg-gray-700 rounded disabled:bg-gray-800 disabled:cursor-not-allowed" required min="0" step="0.1" placeholder="e.g., 2.3" disabled>
+                                        <label for="engagement-x" class="font-semibold">X / Twitter Engagements</label>
+                                        <input id="engagement-x" type="number" class="w-full p-2 bg-gray-700 rounded disabled:bg-gray-800 disabled:cursor-not-allowed" required min="0" step="1" placeholder="e.g., 1500" disabled>
                                     </div>
                                  </div>
                                  <div class="flex items-center gap-3">
                                     <i class="fab fa-instagram text-2xl w-6 text-center"></i>
                                     <div>
-                                        <label for="engagement-ig-main" class="font-semibold">Instagram Main (%)</label>
-                                        <input id="engagement-ig-main" type="number" class="w-full p-2 bg-gray-700 rounded disabled:bg-gray-800 disabled:cursor-not-allowed" required min="0" step="0.1" placeholder="e.g., 5.0" disabled>
+                                        <label for="engagement-ig-main" class="font-semibold">Instagram Main Engagements</label>
+                                        <input id="engagement-ig-main" type="number" class="w-full p-2 bg-gray-700 rounded disabled:bg-gray-800 disabled:cursor-not-allowed" required min="0" step="1" placeholder="e.g., 5500" disabled>
                                     </div>
                                  </div>
                                  <div class="flex items-center gap-3">
                                      <i class="fab fa-instagram-square text-2xl w-6 text-center"></i>
                                      <div>
-                                        <label for="engagement-ig-fan" class="font-semibold">Instagram Fan (%)</label>
-                                        <input id="engagement-ig-fan" type="number" class="w-full p-2 bg-gray-700 rounded disabled:bg-gray-800 disabled:cursor-not-allowed" required min="0" step="0.1" placeholder="e.g., 4.9" disabled>
+                                        <label for="engagement-ig-fan" class="font-semibold">Instagram Fan Engagements</label>
+                                        <input id="engagement-ig-fan" type="number" class="w-full p-2 bg-gray-700 rounded disabled:bg-gray-800 disabled:cursor-not-allowed" required min="0" step="1" placeholder="e.g., 2300" disabled>
                                      </div>
                                  </div>
                                  <div class="flex items-center gap-3">
                                      <i class="fab fa-whatsapp text-2xl w-6 text-center"></i>
                                      <div>
-                                        <label for="engagement-whatsapp" class="font-semibold">WhatsApp (%)</label>
-                                        <input id="engagement-whatsapp" type="number" class="w-full p-2 bg-gray-700 rounded disabled:bg-gray-800 disabled:cursor-not-allowed" required min="0" step="0.1" placeholder="e.g., 3.0" disabled>
+                                        <label for="engagement-whatsapp" class="font-semibold">WhatsApp Engagements</label>
+                                        <input id="engagement-whatsapp" type="number" class="w-full p-2 bg-gray-700 rounded disabled:bg-gray-800 disabled:cursor-not-allowed" required min="0" step="1" placeholder="e.g., 800" disabled>
                                      </div>
                                  </div>
                                  <div class="flex items-center gap-3">
                                      <i class="fab fa-tiktok text-2xl w-6 text-center"></i>
                                      <div>
-                                        <label for="engagement-tiktok" class="font-semibold">TikTok (%)</label>
-                                        <input id="engagement-tiktok" type="number" class="w-full p-2 bg-gray-700 rounded disabled:bg-gray-800 disabled:cursor-not-allowed" required min="0" step="0.1" placeholder="e.g., 3.6" disabled>
+                                        <label for="engagement-tiktok" class="font-semibold">TikTok Engagements</label>
+                                        <input id="engagement-tiktok" type="number" class="w-full p-2 bg-gray-700 rounded disabled:bg-gray-800 disabled:cursor-not-allowed" required min="0" step="1" placeholder="e.g., 4200" disabled>
                                      </div>
                                  </div>
                              </div>
@@ -349,10 +349,14 @@
                 <div id="jersey-orders-content" class="content-section">
                     <div class="bg-card p-6 rounded-lg mb-6">
                         <h3 class="text-xl font-bold mb-4">Add New Jersey Order</h3>
-                        <form id="jersey-order-form" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+                        <form id="jersey-order-form" class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
                             <div>
                                 <label>Customer Name</label>
                                 <input id="customer-name" type="text" class="w-full p-2 bg-gray-700 rounded" required>
+                            </div>
+                            <div>
+                                <label>Customer Email</label>
+                                <input id="customer-email" type="email" class="w-full p-2 bg-gray-700 rounded" required>
                             </div>
                             <div>
                                 <label>Phone Number</label>
@@ -368,7 +372,11 @@
                                     <option>XXL</option>
                                 </select>
                             </div>
-                             <button type="submit" class="bg-gold text-black font-bold py-2 px-4 rounded-md hover-bg-gold-dark">Place Order</button>
+                            <div class="md:col-span-2">
+                                <label>Delivery Location</label>
+                                <input id="delivery-location" type="text" class="w-full p-2 bg-gray-700 rounded" required placeholder="e.g., Club House, Main Gate">
+                            </div>
+                             <button type="submit" class="bg-gold text-black font-bold py-2 px-4 rounded-md hover-bg-gold-dark md:col-span-2">Place Order & Send Confirmation</button>
                         </form>
                     </div>
                     <h2 class="text-2xl font-semibold mb-4">Manage Jersey Orders</h2>
@@ -426,8 +434,8 @@
 
         // --- EMAILJS CONFIG: Your actual credentials ---
         const EMAILJS_SERVICE_ID = "service_9nzfwtm";
-        const EMAILJS_RECEIPT_TEMPLATE_ID = "template_lu4axsh";
-        const EMAILJS_NEW_USER_TEMPLATE_ID = "template_lu4axsh"; // Using the same template for new users, adjust if you have a different one.
+        const EMAILJS_MASTER_TEMPLATE_ID = "template_2uv7tei"; // Use one ID for all emails
+        const EMAILJS_NEW_USER_TEMPLATE_ID = "template_lu4axsh"; 
         const EMAILJS_PUBLIC_KEY = "l3bB3ofE87AW5cFb2";
 
 
@@ -439,7 +447,8 @@
             db = getFirestore(app);
             console.log("Firebase initialized successfully.");
             emailjs.init(EMAILJS_PUBLIC_KEY);
-        } catch (error) {
+        } catch (error)
+        {
             console.error("Firebase initialization failed:", error);
             document.body.innerHTML = `<div class="text-red-500 text-center p-8">Failed to initialize application services. Please check configuration and console. Error: ${error.message}</div>`;
         }
@@ -487,7 +496,7 @@
         };
 
         const formatCurrency = (amount) => {
-            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+            return new Intl.NumberFormat('en-UG', { style: 'currency', currency: 'UGX' }).format(amount);
         };
         
         // --- AUTHENTICATION ---
@@ -616,7 +625,7 @@
                 document.getElementById('admin-alerts-section').style.display = 'none';
             }
 
-            if (['admin', 'treasurer', 'treasury_staff'].includes(currentUserRole)) {
+            if (['admin', 'treasurer', 'treasury_staff', 'president'].includes(currentUserRole)) {
                 navLinks += `<a href="#" data-page="finances-content" class="nav-link block py-2 px-4 rounded hover:bg-gray-700"><i class="fas fa-coins w-6"></i> Finances</a>`;
                 navLinks += `<a href="#" data-page="receipts-content" class="nav-link block py-2 px-4 rounded hover:bg-gray-700"><i class="fas fa-receipt w-6"></i> Issue Receipts</a>`;
                 navLinks += `<a href="#" data-page="jersey-orders-content" class="nav-link block py-2 px-4 rounded hover:bg-gray-700"><i class="fas fa-tshirt w-6"></i> Jersey Orders</a>`;
@@ -644,7 +653,7 @@
             listenForChatMessages();
             listenForNotifications();
 
-            if (['admin', 'treasurer', 'treasury_staff'].includes(currentUserRole)) {
+            if (['admin', 'treasurer', 'treasury_staff', 'president'].includes(currentUserRole)) {
                 listenForTransactions();
                 listenForJerseyOrders();
             }
@@ -662,16 +671,24 @@
             const statsDocRef = doc(db, `apps/${appId}/socialMediaRates`, docId);
 
             onSnapshot(statsDocRef, (doc) => {
-                const data = doc.exists() ? doc.data() : {
-                    x: 0, ig_main: 0, ig_fan: 0, whatsapp: 0, tiktok: 0 // Default values if no data for the month
-                };
+                const rawData = doc.exists() ? doc.data() : { x: 0, ig_main: 0, ig_fan: 0, whatsapp: 0, tiktok: 0 };
                 
+                const totalEngagements = Object.values(rawData).reduce((sum, val) => sum + (typeof val === 'number' ? val : 0), 0);
+
                 if(!doc.exists()){
                     console.warn(`No social media data found for ${monthYear}. Displaying zeros. Please update data on the Social Stats page.`);
                 }
 
                 const platforms = ['X', 'Instagram Main', 'Instagram Fan', 'WhatsApp', 'TikTok'];
-                const engagementData = [data.x, data.ig_main, data.ig_fan, data.whatsapp, data.tiktok];
+                // Calculate percentage of total for the graph
+                const engagementPercentages = totalEngagements > 0 ? [
+                    (rawData.x / totalEngagements) * 100,
+                    (rawData.ig_main / totalEngagements) * 100,
+                    (rawData.ig_fan / totalEngagements) * 100,
+                    (rawData.whatsapp / totalEngagements) * 100,
+                    (rawData.tiktok / totalEngagements) * 100
+                ] : [0, 0, 0, 0, 0];
+
 
                 const ctx = document.getElementById('engagements-chart').getContext('2d');
                 if (engagementsChart) engagementsChart.destroy();
@@ -679,12 +696,12 @@
                 Chart.defaults.color = '#9CA3AF';
                 
                 engagementsChart = new Chart(ctx, {
-                    type: 'bar', // Changed from 'line' to 'bar'
+                    type: 'bar', 
                     data: {
                         labels: platforms,
                         datasets: [{
-                            label: `Engagement Rate for ${monthYear} (%)`,
-                            data: engagementData,
+                            label: `Contribution to Total Engagements for ${monthYear} (%)`,
+                            data: engagementPercentages,
                             backgroundColor: [
                                 'rgba(255, 255, 255, 0.8)', // X (White/Gray)
                                 'rgba(193, 53, 132, 0.8)', // Instagram (Pink)
@@ -697,11 +714,25 @@
                         }]
                     },
                     options: { 
-                        indexAxis: 'y', // To make it a horizontal bar chart
+                        indexAxis: 'y', 
                         responsive: true,
                         plugins: {
                             legend: {
-                                display: false // Hiding legend as per screenshot
+                                display: false 
+                            },
+                             tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed.x !== null) {
+                                            label += context.parsed.x.toFixed(2) + '%';
+                                        }
+                                        return label;
+                                    }
+                                }
                             }
                         },
                         scales: { 
@@ -712,7 +743,7 @@
                                 },
                                 ticks: {
                                     callback: function(value) {
-                                        return value + '%' // Add percentage sign to x-axis
+                                        return value + '%' 
                                     }
                                 }
                             },
@@ -948,6 +979,22 @@
         }
 
         // RECEIPTS
+        async function getNextReceiptNumber() {
+            const counterRef = doc(db, `apps/${appId}/counters`, 'receiptCounter');
+            let newReceiptNumber;
+            await runTransaction(db, async (transaction) => {
+                const counterDoc = await transaction.get(counterRef);
+                if (!counterDoc.exists()) {
+                    newReceiptNumber = 1;
+                    transaction.set(counterRef, { currentNumber: newReceiptNumber });
+                } else {
+                    newReceiptNumber = counterDoc.data().currentNumber + 1;
+                    transaction.update(counterRef, { currentNumber: newReceiptNumber });
+                }
+            });
+            return `AFC-REC-${String(newReceiptNumber).padStart(4, '0')}`;
+        }
+
         async function handleReceiptSubmit(e) {
             e.preventDefault();
             showLoader();
@@ -956,36 +1003,35 @@
             const amount = parseFloat(document.getElementById('payment-amount').value);
             const purpose = document.getElementById('payment-purpose').value;
 
-            const receiptNumber = `AFC-${Date.now()}`;
-            const securityCode = `SEC-${crypto.randomUUID()}`;
-
             try {
-                // Generate QR Code as a data URL
+                const receiptNumber = await getNextReceiptNumber();
+                const securityCode = `SEC-${crypto.randomUUID()}`;
+
                 const qr = qrcode(0, 'L');
                 qr.addData(securityCode);
                 qr.make();
                 const qrImgData = qr.createDataURL(4);
 
-                // Save receipt data to Firestore for verification
                 await addDoc(collection(db, `apps/${appId}/receipts`), {
                     receiptNumber, securityCode, payerName, payerEmail, amount, purpose, createdAt: Timestamp.now()
                 });
 
-                // Prepare template parameters for an HTML email
                 const templateParams = {
+                    subject_line: `Your Akachai FC Receipt #${receiptNumber}`,
+                    email_title: "OFFICIAL RECEIPT",
                     to_name: payerName,
                     to_email: payerEmail,
+                    is_receipt: true,
                     receipt_number: receiptNumber,
                     amount: formatCurrency(amount),
                     purpose: purpose,
                     receipt_date: new Date().toLocaleDateString(),
-                    qr_code_image: qrImgData // Send the QR code as a data URL for embedding in the email
+                    qr_code_image: qrImgData
                 };
 
-                // Send the email using EmailJS
-                await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_RECEIPT_TEMPLATE_ID, templateParams);
+                await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_MASTER_TEMPLATE_ID, templateParams);
 
-                showToast('Receipt sent successfully!');
+                showToast(`Receipt sent successfully! #: ${receiptNumber}`);
                 e.target.reset();
 
             } catch (error) {
@@ -1050,13 +1096,16 @@
             const role = document.getElementById('new-user-role').value;
             
             try {
+                // This doesn't create an auth user, but sends a link they can use to sign up.
+                // The actual user creation happens on their first login.
                 await sendPasswordResetEmail(auth, email);
                 
+                // We store their info in a pending collection.
                 await setDoc(doc(db, `apps/${appId}/users_pending`, email), {
                     name, email, role, createdAt: Timestamp.now()
                 });
                 
-                showToast('Password reset email sent to new user.');
+                showToast('Password reset/invitation email sent to new user.');
                 e.target.reset();
 
             } catch (error) {
@@ -1198,6 +1247,9 @@
                     document.getElementById('engagement-ig-fan').value = data.ig_fan || '';
                     document.getElementById('engagement-whatsapp').value = data.whatsapp || '';
                     document.getElementById('engagement-tiktok').value = data.tiktok || '';
+                } else {
+                    // Clear form if no data for the current month
+                    document.getElementById('social-media-form').reset();
                 }
             });
         }
@@ -1224,18 +1276,39 @@
             showLoader();
             try {
                 const orderNumber = await getNextOrderNumber();
+                const customerName = document.getElementById('customer-name').value;
+                const customerEmail = document.getElementById('customer-email').value;
+                const customerPhone = document.getElementById('customer-phone').value;
+                const jerseySize = document.getElementById('jersey-size').value;
+                const deliveryLocation = document.getElementById('delivery-location').value;
+
                 const orderData = {
                     orderNumber: orderNumber,
-                    customerName: document.getElementById('customer-name').value,
-                    customerPhone: document.getElementById('customer-phone').value,
-                    jerseySize: document.getElementById('jersey-size').value,
-                    status: 'Pending', // Pending -> Paid -> Delivered
+                    customerName: customerName,
+                    customerEmail: customerEmail,
+                    customerPhone: customerPhone,
+                    jerseySize: jerseySize,
+                    deliveryLocation: deliveryLocation,
+                    status: 'Pending', // Pending -> Paid -> Ready for Pick Up
                     placedBy: currentUser.name,
                     createdAt: Timestamp.now()
                 };
                 
                 await addDoc(collection(db, `apps/${appId}/jerseyOrders`), orderData);
-                showToast(`Order placed successfully! Order #: ${orderNumber}`);
+
+                const templateParams = {
+                    subject_line: `Akachai FC Jersey Order Confirmation #${orderNumber}`,
+                    email_title: "ORDER CONFIRMATION",
+                    to_name: customerName,
+                    to_email: customerEmail,
+                    is_order_confirmation: true,
+                    order_number: orderNumber,
+                    jersey_size: jerseySize,
+                    delivery_location: deliveryLocation
+                };
+                await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_MASTER_TEMPLATE_ID, templateParams);
+                
+                showToast(`Order placed and confirmation sent! Order #: ${orderNumber}`);
                 e.target.reset();
 
             } catch (error) {
@@ -1252,10 +1325,11 @@
             onSnapshot(q, (snapshot) => {
                 const listEl = document.getElementById('jersey-orders-list');
                 listEl.innerHTML = `
-                    <div class="grid grid-cols-5 gap-4 font-bold p-2 border-b border-gray-600">
+                    <div class="grid grid-cols-6 gap-4 font-bold p-2 border-b border-gray-600">
                         <div>Order #</div>
                         <div>Customer</div>
                         <div>Size</div>
+                        <div>Delivery Location</div>
                         <div>Date</div>
                         <div>Status</div>
                     </div>
@@ -1267,20 +1341,22 @@
                 snapshot.forEach(doc => {
                     const order = {id: doc.id, ...doc.data()};
                     const el = document.createElement('div');
-                    el.className = 'grid grid-cols-5 gap-4 items-center p-2 border-b border-gray-700';
+                    el.className = 'grid grid-cols-6 gap-4 items-center p-2 border-b border-gray-700';
                     el.innerHTML = `
                         <div>${order.orderNumber}</div>
                         <div>
                             <p>${order.customerName}</p>
                             <p class="text-xs text-gray-400">${order.customerPhone}</p>
+                            <p class="text-xs text-gray-400">${order.customerEmail || ''}</p>
                         </div>
                         <div>${order.jerseySize}</div>
+                        <div>${order.deliveryLocation}</div>
                         <div>${order.createdAt.toDate().toLocaleDateString()}</div>
                         <div>
                             <select class="order-status-select bg-gray-600 rounded p-1" data-id="${order.id}">
                                 <option value="Pending" ${order.status === 'Pending' ? 'selected' : ''}>Pending</option>
                                 <option value="Paid" ${order.status === 'Paid' ? 'selected' : ''}>Paid</option>
-                                <option value="Delivered" ${order.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+                                <option value="Ready for Pick Up" ${order.status === 'Ready for Pick Up' ? 'selected' : ''}>Ready for Pick Up</option>
                             </select>
                         </div>
                     `;
@@ -1297,7 +1373,27 @@
                 try {
                     const orderDocRef = doc(db, `apps/${appId}/jerseyOrders`, orderId);
                     await updateDoc(orderDocRef, { status: newStatus });
-                    showToast("Order status updated.");
+                    
+                    if (newStatus === 'Ready for Pick Up') {
+                        const orderDoc = await getDoc(orderDocRef);
+                        if(orderDoc.exists()){
+                            const orderData = orderDoc.data();
+                             const templateParams = {
+                                subject_line: `Your Akachai FC Order #${orderData.orderNumber} is Ready for Pick Up!`,
+                                email_title: "ORDER READY FOR PICK UP",
+                                to_name: orderData.customerName,
+                                to_email: orderData.customerEmail,
+                                is_pickup_notification: true,
+                                order_number: orderData.orderNumber,
+                                delivery_location: orderData.deliveryLocation
+                            };
+                            await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_MASTER_TEMPLATE_ID, templateParams);
+                            showToast("Order status updated and 'Ready for Pick Up' confirmation sent!");
+                        }
+                    } else {
+                        showToast("Order status updated.");
+                    }
+
                 } catch(error) {
                     console.error("Error updating order status: ", error);
                     showToast("Failed to update status.", true);
