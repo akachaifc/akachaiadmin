@@ -428,6 +428,7 @@
                      <nav class="flex space-x-4 border-b border-theme mb-6">
                         <a href="#" data-sub-page="jersey-order-form-container" class="sub-nav-link py-2 px-1 font-medium active">New Order</a>
                         <a href="#" data-sub-page="jersey-orders-list-container" class="sub-nav-link py-2 px-1 font-medium">Manage Orders</a>
+                        <a href="#" data-sub-page="jersey-pricing" class="sub-nav-link py-2 px-1 font-medium">Pricing</a>
                     </nav>
 
                     <div id="jersey-order-form-container-sub-section" class="sub-section active">
@@ -622,6 +623,7 @@
         let currentUser = null;
         let currentUserRole = 'user';
         let engagementsChart = null;
+        let seasonProgressChart = null;
         const loadingOverlay = document.getElementById('loading-overlay');
         let inactivityTimer;
         let jerseyPrices = {};
@@ -711,16 +713,29 @@
             setTimeout(() => toast.remove(), 3000);
         };
 
-        function showPage(pageId) {
+        function showPage(pageId, subPageId) {
             document.querySelectorAll('.content-section').forEach(section => section.classList.remove('active'));
             const activePage = document.getElementById(pageId);
             if (activePage) {
                 activePage.classList.add('active');
                 const title = pageId.replace('-content', '').replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
                 document.getElementById('page-title').textContent = title;
+
+                // Handle sub-pages
+                const subNavContainer = activePage.querySelector('nav');
+                if (subNavContainer) {
+                    const targetSubPageId = subPageId || subNavContainer.querySelector('.sub-nav-link').dataset.subPage;
+                    activePage.querySelectorAll('.sub-section').forEach(sub => sub.classList.remove('active'));
+                    activePage.querySelectorAll('.sub-nav-link').forEach(link => link.classList.remove('active'));
+                    
+                    const activeSubPage = document.getElementById(`${targetSubPageId}-sub-section`);
+                    if(activeSubPage) activeSubPage.classList.add('active');
+                    
+                    const activeSubNavLink = subNavContainer.querySelector(`[data-sub-page="${targetSubPageId}"]`);
+                    if(activeSubNavLink) activeSubNavLink.classList.add('active');
+                }
             } else {
-                document.getElementById('dashboard-content').classList.add('active');
-                document.getElementById('page-title').textContent = 'Dashboard';
+                showPage('dashboard-content');
             }
             if (pageId === 'social-media-content') {
                 loadSocialMediaFormData();
