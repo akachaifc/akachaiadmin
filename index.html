@@ -22,8 +22,9 @@
             --card-bg: #FFFFFF; /* light: white */
             --border-color: #D1D5DB; /* light: gray-300 */
             --input-bg: #F9FAFB; /* light: gray-50 */
-            --primary-color: #D4AF37; 
-            --gold-text: #D4AF37;
+            --primary-color: #EA580C; /* light: orange-600 */
+            --primary-text: #EA580C;
+            --primary-hover: #C2410C; /* light: orange-700 */
         }
 
         html.dark {
@@ -32,6 +33,9 @@
             --card-bg: #1F2937; /* dark: gray-800 */
             --border-color: #4B5563; /* dark: gray-600 */
             --input-bg: #374151; /* dark: gray-700 */
+            --primary-color: #D4AF37; /* dark: gold */
+            --primary-text: #D4AF37;
+            --primary-hover: #b89b31; /* dark: gold-hover */
         }
 
         body {
@@ -41,21 +45,20 @@
             transition: background-color 0.3s, color 0.3s;
         }
 
-        .gold-text { color: var(--gold-text); }
+        .primary-text { color: var(--primary-text); }
         .bg-card { background-color: var(--card-bg); }
         .border-theme { border-color: var(--border-color); }
         .bg-input { background-color: var(--input-bg); }
-        .bg-gold { background-color: var(--primary-color); }
-        .hover-bg-gold-dark:hover { background-color: #b89b31; }
+        .bg-primary { background-color: var(--primary-color); }
+        .hover-bg-primary-dark:hover { background-color: var(--primary-hover); }
 
         /* Custom scrollbar */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: var(--card-bg); }
         ::-webkit-scrollbar-thumb { background: var(--primary-color); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #b89b31; }
 
-        .content-section { display: none; }
-        .content-section.active { display: block; }
+        .content-section, .sub-section { display: none; }
+        .content-section.active, .sub-section.active { display: block; }
         
         .loader {
             border: 5px solid #f3f3f3;
@@ -71,14 +74,18 @@
         }
         
         /* Sidebar styles */
-        #sidebar.collapsed {
-            width: 5rem; /* 80px */
+        #sidebar.collapsed { width: 5rem; }
+        #sidebar.collapsed .nav-text, #sidebar.collapsed .sidebar-title { display: none; }
+        #sidebar.collapsed .nav-link { justify-content: center; }
+
+        /* Sub-tab styles */
+        .sub-nav-link {
+            transition: all 0.2s;
+            border-bottom: 2px solid transparent;
         }
-        #sidebar.collapsed .nav-text, #sidebar.collapsed .sidebar-title {
-            display: none;
-        }
-        #sidebar.collapsed .nav-link {
-            justify-content: center;
+        .sub-nav-link.active {
+            border-bottom-color: var(--primary-color);
+            color: var(--primary-text);
         }
     </style>
 </head>
@@ -91,9 +98,9 @@
     <!-- Login/Signup Section --><section id="auth-section" class="flex items-center justify-center min-h-screen p-4">
         <div class="bg-card p-8 rounded-lg shadow-lg w-full max-w-md border border-theme">
              <img src="https://i.ibb.co/x8KnbRxQ/1000324643-92de31910003d42fc3ade892f8059b77-8-7-2025-1-30-00-PM-removebg-preview.png" alt="AKACHAI FC Logo" class="h-20 w-20 mx-auto mb-4 object-contain">
-            <h1 id="auth-title" class="text-3xl font-bold text-center gold-text mb-6">AKACHAI ADMIN PORTAL</h1>
+            <h1 id="auth-title" class="text-3xl font-bold text-center primary-text mb-6">AKACHAI ADMIN PORTAL</h1>
             <div id="auth-container">
-                <!-- This will be populated by JS for login, signup -->
+                <!-- This will be populated by JS for login, signup, or link completion -->
             </div>
             <p id="auth-error" class="text-red-500 text-center mt-4"></p>
         </div>
@@ -105,12 +112,12 @@
             <!-- Sidebar Navigation --><aside id="sidebar" class="w-64 bg-card fixed inset-y-0 left-0 p-4 border-r border-theme flex flex-col transform -translate-x-full md:relative md:translate-x-0 z-30 transition-all duration-300 ease-in-out">
                 <div class="text-center mb-8">
                     <img src="https://i.ibb.co/x8KnbRxQ/1000324643-92de31910003d42fc3ade892f8059b77-8-7-2025-1-30-00-PM-removebg-preview.png" alt="AKACHAI FC Logo" class="h-16 w-16 mx-auto mb-2 object-contain">
-                    <h2 class="text-2xl font-bold gold-text sidebar-title">Akachai FC</h2>
+                    <h2 class="text-2xl font-bold primary-text sidebar-title">Akachai FC</h2>
                 </div>
                 <nav id="main-nav" class="space-y-2 flex-grow overflow-y-auto">
                     <!-- Nav links will be injected by JS based on role --></nav>
                 <div class="mt-auto pt-4">
-                    <button id="sidebar-toggle-btn" class="w-full mb-2 text-gray-500 hover:text-gold-text py-2 px-4 rounded-md hidden md:block">
+                    <button id="sidebar-toggle-btn" class="w-full mb-2 text-gray-500 hover:text-primary-text py-2 px-4 rounded-md hidden md:block">
                         <i class="fas fa-chevron-left"></i>
                     </button>
                      <button id="logout-btn" class="w-full bg-red-600 text-white font-bold py-2 px-4 rounded-md hover:bg-red-700 transition-colors flex items-center justify-center gap-2">
@@ -124,7 +131,7 @@
                      <button id="hamburger-btn" class="text-2xl md:hidden">
                         <i class="fas fa-bars"></i>
                     </button>
-                    <h1 id="page-title" class="text-3xl md:text-5xl font-extrabold gold-text">Dashboard</h1>
+                    <h1 id="page-title" class="text-3xl md:text-5xl font-extrabold primary-text">Dashboard</h1>
                     <div class="flex items-center gap-4">
                         <button id="theme-toggle-btn" class="text-2xl">
                            <i class="fas fa-sun"></i> <!-- Icon changes dynamically --></button>
@@ -139,22 +146,41 @@
                     </div>
                 </header>
 
-                <!-- All content sections go here --><!-- Dashboard Content --><div id="dashboard-content" class="content-section active">
-                    <h2 class="text-2xl font-semibold mb-4">Monthly Social Media Engagement</h2>
-                    <div class="bg-card p-4 rounded-lg shadow-md border border-theme">
-                        <canvas id="engagements-chart"></canvas>
+                <!-- All content sections go here -->
+                <div id="dashboard-content" class="content-section active">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                        <div class="lg:col-span-2 bg-card p-4 rounded-lg shadow-md border border-theme">
+                            <h2 class="text-2xl font-semibold mb-4">Social Media Engagement</h2>
+                            <canvas id="engagements-chart"></canvas>
+                        </div>
+                        <div class="bg-card p-4 rounded-lg shadow-md border border-theme flex flex-col items-center justify-center">
+                             <h2 class="text-2xl font-semibold mb-4">Season Progress</h2>
+                             <canvas id="season-progress-chart" class="max-w-[250px] mx-auto"></canvas>
+                             <div id="season-settings-section" class="mt-4 w-full">
+                                <!-- Admin-only season settings form will go here -->
+                             </div>
+                        </div>
+                    </div>
+                     <div class="bg-card p-6 rounded-lg mb-6 border border-theme">
+                        <h2 class="text-2xl font-semibold mb-4">Upcoming Events</h2>
+                        <div id="upcoming-events-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                           <!-- Event posters will be displayed here -->
+                        </div>
+                         <div id="manage-events-section" class="mt-6 pt-4 border-t border-theme">
+                           <!-- Admin/President event upload form will go here -->
+                        </div>
                     </div>
                     <div id="admin-alerts-section" class="mt-8">
                         <h2 class="text-2xl font-semibold mb-4">Send Important Alert</h2>
                         <div class="bg-card p-4 rounded-lg shadow-md border border-theme">
                            <textarea id="alert-message" class="w-full p-3 bg-input rounded-md border border-theme" rows="3" placeholder="Type your alert message here..."></textarea>
-                           <button id="send-alert-btn" class="mt-2 bg-gold text-black font-bold py-2 px-4 rounded-md hover-bg-gold-dark">Send Alert</button>
+                           <button id="send-alert-btn" class="mt-2 bg-primary text-black font-bold py-2 px-4 rounded-md hover-bg-primary-dark">Send Alert</button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Requisitions Content --><div id="requisitions-content" class="content-section">
-                    <button id="new-requisition-btn" class="bg-gold text-black font-bold py-2 px-4 rounded-md hover-bg-gold-dark mb-4">New Requisition</button>
+                <div id="requisitions-content" class="content-section">
+                    <button id="new-requisition-btn" class="bg-primary text-black font-bold py-2 px-4 rounded-md hover-bg-primary-dark mb-4">New Requisition</button>
                     <div id="new-requisition-form-container" class="bg-card p-6 rounded-lg mb-6 hidden border border-theme">
                         <h3 class="text-xl font-bold mb-4">Requisition Form</h3>
                         <form id="requisition-form">
@@ -168,163 +194,191 @@
                                 </div>
                              </div>
                              <button type="button" id="add-req-item-btn" class="text-sm bg-gray-500 dark:bg-gray-600 py-1 px-3 rounded hover:bg-gray-400 dark:hover:bg-gray-500 mb-4">Add Another Item</button>
-                             <button type="submit" class="bg-gold text-black font-bold py-2 px-4 rounded-md hover-bg-gold-dark">Submit for Approval</button>
+                             <button type="submit" class="bg-primary text-black font-bold py-2 px-4 rounded-md hover-bg-primary-dark">Submit for Approval</button>
                         </form>
                     </div>
                     <h2 class="text-2xl font-semibold mb-4">Requisition History & Approvals</h2>
-                    <div id="requisitions-list" class="space-y-4">
-                        <!-- Requisition items will be dynamically added here --></div>
+                    <div id="requisitions-list" class="space-y-4"></div>
                 </div>
 
-                <!-- Finances Content --><div id="finances-content" class="content-section">
-                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <div class="bg-card p-4 rounded-lg border border-theme">
-                            <h3 class="text-lg font-bold text-green-500">Total Credit (Inflow)</h3>
-                            <p id="total-inflow" class="text-3xl font-semibold">0.00</p>
+                <div id="finances-content" class="content-section">
+                    <nav class="flex space-x-4 border-b border-theme mb-6">
+                        <a href="#" data-sub-page="transactions" class="sub-nav-link py-2 px-1 font-medium active">Transactions</a>
+                        <a href="#" data-sub-page="issue-receipts" class="sub-nav-link py-2 px-1 font-medium">Issue Receipts</a>
+                        <a href="#" data-sub-page="view-receipts" class="sub-nav-link py-2 px-1 font-medium">View Receipts</a>
+                        <a href="#" data-sub-page="reports" class="sub-nav-link py-2 px-1 font-medium">Reports</a>
+                    </nav>
+
+                    <div id="transactions-sub-section" class="sub-section active">
+                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div class="bg-card p-4 rounded-lg border border-theme">
+                                <h3 class="text-lg font-bold text-green-500">Total Credit (Inflow)</h3>
+                                <p id="total-inflow" class="text-3xl font-semibold">0.00</p>
+                            </div>
+                            <div class="bg-card p-4 rounded-lg border border-theme">
+                                <h3 class="text-lg font-bold text-red-500">Total Debit (Outflow)</h3>
+                                <p id="total-outflow" class="text-3xl font-semibold">0.00</p>
+                            </div>
                         </div>
-                        <div class="bg-card p-4 rounded-lg border border-theme">
-                            <h3 class="text-lg font-bold text-red-500">Total Debit (Outflow)</h3>
-                            <p id="total-outflow" class="text-3xl font-semibold">0.00</p>
+                        <div id="pending-transactions-section" class="mb-8">
+                            <h2 class="text-2xl font-semibold mb-4">Pending Transactions for Approval</h2>
+                            <div id="pending-transactions-list" class="space-y-4"></div>
+                        </div>
+                         <div class="bg-card p-6 rounded-lg mb-6 border border-theme">
+                            <h3 class="text-xl font-bold mb-4">Submit New Transaction for Approval</h3>
+                            <form id="transaction-form" class="flex flex-wrap gap-4 items-end">
+                                <div class="flex-grow">
+                                    <label>Description</label>
+                                    <input id="trans-desc" type="text" placeholder="e.g., Purchase of new balls" class="w-full p-2 bg-input rounded" required>
+                                </div>
+                                <div class="flex-grow">
+                                    <label>Amount</label>
+                                    <input id="trans-amount" type="number" placeholder="1000" class="w-full p-2 bg-input rounded" required min="0" step="any">
+                                </div>
+                                <div class="flex-grow">
+                                    <label>Type</label>
+                                    <select id="trans-type" class="w-full p-2 bg-input rounded">
+                                        <option value="credit">Credit (Inflow)</option>
+                                        <option value="debit">Debit (Outflow)</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="bg-primary text-black font-bold py-2 px-4 rounded-md hover-bg-primary-dark">Submit for Approval</button>
+                            </form>
+                        </div>
+                        <h2 class="text-2xl font-semibold mb-4">Approved Transaction History</h2>
+                        <div id="transactions-list" class="bg-card p-4 rounded-lg border border-theme"></div>
+                    </div>
+                    <div id="issue-receipts-sub-section" class="sub-section">
+                        <div class="bg-card p-6 rounded-lg border border-theme">
+                            <form id="receipt-form">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label>Payer's Name</label>
+                                        <input id="payer-name" type="text" class="w-full p-2 bg-input rounded" required>
+                                    </div>
+                                    <div>
+                                        <label>Payer's Email</label>
+                                        <input id="payer-email" type="email" class="w-full p-2 bg-input rounded" required>
+                                    </div>
+                                    <div>
+                                        <label>Amount Paid</label>
+                                        <input id="payment-amount" type="number" class="w-full p-2 bg-input rounded" required min="1" step="any">
+                                    </div>
+                                    <div>
+                                        <label>Payment For</label>
+                                        <input id="payment-purpose" type="text" placeholder="e.g., Club Membership" class="w-full p-2 bg-input rounded" required>
+                                    </div>
+                                </div>
+                                <button type="submit" class="mt-4 bg-primary text-black font-bold py-2 px-6 rounded-md hover-bg-primary-dark">Generate & Send Receipt</button>
+                            </form>
                         </div>
                     </div>
-
-                    <div id="pending-transactions-section" class="mb-8">
-                        <h2 class="text-2xl font-semibold mb-4">Pending Transactions for Approval</h2>
-                        <div id="pending-transactions-list" class="space-y-4">
-                            <!-- Pending transaction items will be dynamically added here --></div>
+                    <div id="view-receipts-sub-section" class="sub-section">
+                         <div id="receipts-list-view" class="bg-card p-4 rounded-lg border border-theme"></div>
                     </div>
-                     <div class="bg-card p-6 rounded-lg mb-6 border border-theme">
-                        <h3 class="text-xl font-bold mb-4">Submit New Transaction for Approval</h3>
-                        <form id="transaction-form" class="flex flex-wrap gap-4 items-end">
-                            <div class="flex-grow">
-                                <label>Description</label>
-                                <input id="trans-desc" type="text" placeholder="e.g., Purchase of new balls" class="w-full p-2 bg-input rounded" required>
-                            </div>
-                            <div class="flex-grow">
-                                <label>Amount</label>
-                                <input id="trans-amount" type="number" placeholder="1000" class="w-full p-2 bg-input rounded" required min="0" step="any">
-                            </div>
-                            <div class="flex-grow">
-                                <label>Type</label>
-                                <select id="trans-type" class="w-full p-2 bg-input rounded">
-                                    <option value="credit">Credit (Inflow)</option>
-                                    <option value="debit">Debit (Outflow)</option>
-                                </select>
-                            </div>
-                            <button type="submit" class="bg-gold text-black font-bold py-2 px-4 rounded-md hover-bg-gold-dark">Submit for Approval</button>
-                        </form>
-                    </div>
-                    <h2 class="text-2xl font-semibold mb-4">Approved Transaction History</h2>
-                    <div id="transactions-list" class="bg-card p-4 rounded-lg border border-theme">
-                       <!-- transaction items will be added here --></div>
-                </div>
-
-                <!-- Receipt Issuance Content --><div id="receipts-content" class="content-section">
-                    <h2 class="text-2xl font-semibold mb-4">Issue a New Receipt</h2>
-                    <div class="bg-card p-6 rounded-lg border border-theme">
-                        <form id="receipt-form">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div id="reports-sub-section" class="sub-section">
+                         <div class="bg-card p-6 rounded-lg mb-6 border border-theme">
+                            <h3 class="text-xl font-bold mb-4">Generate Financial Report</h3>
+                            <form id="report-form" class="flex flex-wrap gap-4 items-end">
                                 <div>
-                                    <label>Payer's Name</label>
-                                    <input id="payer-name" type="text" class="w-full p-2 bg-input rounded" required>
+                                    <label for="start-date">Start Date</label>
+                                    <input id="start-date" type="date" class="w-full p-2 bg-input rounded" required>
                                 </div>
                                 <div>
-                                    <label>Payer's Email</label>
-                                    <input id="payer-email" type="email" class="w-full p-2 bg-input rounded" required>
+                                    <label for="end-date">End Date</label>
+                                    <input id="end-date" type="date" class="w-full p-2 bg-input rounded" required>
                                 </div>
-                                <div>
-                                    <label>Amount Paid</label>
-                                    <input id="payment-amount" type="number" class="w-full p-2 bg-input rounded" required min="1" step="any">
-                                </div>
-                                <div>
-                                    <label>Payment For</label>
-                                    <input id="payment-purpose" type="text" placeholder="e.g., Club Membership" class="w-full p-2 bg-input rounded" required>
-                                </div>
-                            </div>
-                            <button type="submit" class="mt-4 bg-gold text-black font-bold py-2 px-6 rounded-md hover-bg-gold-dark">Generate & Send Receipt</button>
-                        </form>
-                    </div>
-                </div>
-
-                <!-- View Receipts Content -->
-                <div id="view-receipts-content" class="content-section">
-                    <h2 class="text-2xl font-semibold mb-4">Issued Receipts</h2>
-                    <div id="receipts-list-view" class="bg-card p-4 rounded-lg border border-theme">
-                        <!-- Issued receipts will be listed here -->
-                    </div>
-                </div>
-
-                <!-- Financial Reports Content -->
-                <div id="financial-reports-content" class="content-section">
-                     <div class="bg-card p-6 rounded-lg mb-6 border border-theme">
-                        <h3 class="text-xl font-bold mb-4">Generate Financial Report</h3>
-                        <form id="report-form" class="flex flex-wrap gap-4 items-end">
-                            <div>
-                                <label for="start-date">Start Date</label>
-                                <input id="start-date" type="date" class="w-full p-2 bg-input rounded" required>
-                            </div>
-                            <div>
-                                <label for="end-date">End Date</label>
-                                <input id="end-date" type="date" class="w-full p-2 bg-input rounded" required>
-                            </div>
-                            <button id="generate-report-btn" class="bg-gold text-black font-bold py-2 px-4 rounded-md hover-bg-gold-dark">Generate PDF</button>
-                        </form>
-                    </div>
-                </div>
-
-
-                <!-- Chat Room Content --><div id="chat-content" class="content-section">
-                    <h2 class="text-2xl font-semibold mb-4">Club Chat Room</h2>
-                    <div class="bg-card rounded-lg h-[70vh] flex flex-col border border-theme">
-                        <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-4">
-                            <!-- Chat messages will appear here --></div>
-                        <div class="p-4 border-t border-theme">
-                            <form id="chat-form" class="flex gap-2">
-                                <input id="chat-input" type="text" placeholder="Type a message..." class="flex-1 p-2 bg-input rounded" required>
-                                <button type="submit" class="bg-gold text-black font-bold py-2 px-4 rounded-md hover-bg-gold-dark">Send</button>
+                                <button id="generate-report-btn" class="bg-primary text-black font-bold py-2 px-4 rounded-md hover-bg-primary-dark">Generate PDF</button>
                             </form>
                         </div>
                     </div>
                 </div>
 
-                 <!-- User Management (Admin Only) --><div id="user-management-content" class="content-section">
-                    <div class="bg-card p-6 rounded-lg mb-6 border border-theme">
-                        <h3 class="text-xl font-bold mb-4">Invite New User</h3>
-                        <form id="add-user-form" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-                            <div class="md:col-span-1">
-                                <label>Full Name</label>
-                                <input id="new-user-name" type="text" class="w-full p-2 bg-input rounded" required>
-                            </div>
-                            <div class="md:col-span-1">
-                                <label>Email</label>
-                                <input id="new-user-email" type="email" class="w-full p-2 bg-input rounded" required>
-                            </div>
-                            <div class="md:col-span-1">
-                                <label>Role</label>
-                                <select id="new-user-role" class="w-full p-2 bg-input rounded">
-                                    <option value="user">General User</option>
-                                    <option value="captain">Captain</option>
-                                    <option value="treasurer">Treasurer</option>
-                                    <option value="president">President</option>
-                                    <option value="admin">Admin</option>
-                                    <option value="social_media_x">Social Media (X)</option>
-                                    <option value="social_media_ig_main">Social Media (Instagram Main)</option>
-                                    <option value="social_media_ig_fan">Social Media (Instagram Fan)</option>
-                                    <option value="social_media_whatsapp">Social Media (WhatsApp)</option>
-                                    <option value="social_media_tiktok">Social Media (TikTok)</option>
-                                    <option value="treasury_staff">Treasury Staff</option>
-                                </select>
-                            </div>
-                             <button type="submit" class="bg-gold text-black font-bold py-2 px-4 rounded-md hover-bg-gold-dark">Send Invite</button>
-                        </form>
-                        <p class="text-sm mt-2 text-gray-500 dark:text-gray-400">A sign-up link will be sent from a 'no-reply' Firebase email.</p>
+                <div id="chat-content" class="content-section">
+                    <h2 class="text-2xl font-semibold mb-4">Club Chat Room</h2>
+                    <div class="bg-card rounded-lg h-[70vh] flex flex-col border border-theme">
+                        <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-4"></div>
+                        <div class="p-4 border-t border-theme">
+                            <form id="chat-form" class="flex gap-2">
+                                <input id="chat-input" type="text" placeholder="Type a message..." class="flex-1 p-2 bg-input rounded" required>
+                                <button type="submit" class="bg-primary text-black font-bold py-2 px-4 rounded-md hover-bg-primary-dark">Send</button>
+                            </form>
+                        </div>
                     </div>
-                    <h2 class="text-2xl font-semibold mb-4">Manage Users</h2>
-                    <div id="users-list" class="bg-card p-4 rounded-lg border border-theme">
-                        <!-- User list will appear here --></div>
                 </div>
 
-                <!-- Social Media Stats Content --><div id="social-media-content" class="content-section">
+                <div id="user-management-content" class="content-section">
+                     <nav class="flex space-x-4 border-b border-theme mb-6">
+                        <a href="#" data-sub-page="invite-user" class="sub-nav-link py-2 px-1 font-medium active">Invite User</a>
+                        <a href="#" data-sub-page="role-descriptions" class="sub-nav-link py-2 px-1 font-medium">Role Descriptions</a>
+                    </nav>
+                    <div id="invite-user-sub-section" class="sub-section active">
+                        <div class="bg-card p-6 rounded-lg mb-6 border border-theme">
+                            <h3 class="text-xl font-bold mb-4">Invite New User</h3>
+                            <form id="add-user-form" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                                <div class="md:col-span-1">
+                                    <label>Full Name</label>
+                                    <input id="new-user-name" type="text" class="w-full p-2 bg-input rounded" required>
+                                </div>
+                                <div class="md:col-span-1">
+                                    <label>Email</label>
+                                    <input id="new-user-email" type="email" class="w-full p-2 bg-input rounded" required>
+                                </div>
+                                <div class="md:col-span-1">
+                                    <label>Role</label>
+                                    <select id="new-user-role" class="w-full p-2 bg-input rounded">
+                                        <option value="user">General User</option>
+                                        <option value="captain">Captain</option>
+                                        <option value="secretary">Secretary</option>
+                                        <option value="treasurer">Treasurer</option>
+                                        <option value="president">President</option>
+                                        <option value="admin">Admin</option>
+                                        <option value="social_media_x">Social Media (X)</option>
+                                        <option value="social_media_ig_main">Social Media (Instagram Main)</option>
+                                        <option value="social_media_ig_fan">Social Media (Instagram Fan)</option>
+                                        <option value="social_media_whatsapp">Social Media (WhatsApp)</option>
+                                        <option value="social_media_tiktok">Social Media (TikTok)</option>
+                                        <option value="treasury_staff">Treasury Staff</option>
+                                    </select>
+                                </div>
+                                 <button type="submit" class="bg-primary text-black font-bold py-2 px-4 rounded-md hover-bg-primary-dark">Send Invite</button>
+                            </form>
+                            <p class="text-sm mt-2 text-gray-500 dark:text-gray-400">A sign-up link will be sent from a 'no-reply' Firebase email.</p>
+                        </div>
+                        <h2 class="text-2xl font-semibold mb-4">Manage Users</h2>
+                        <div id="users-list" class="bg-card p-4 rounded-lg border border-theme"></div>
+                    </div>
+                     <div id="role-descriptions-sub-section" class="sub-section">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div class="bg-card p-6 rounded-lg border border-theme">
+                                <h3 class="text-xl font-bold primary-text mb-2">Admin</h3>
+                                <p>Full control. Can manage users, finances, players, and all settings.</p>
+                            </div>
+                            <div class="bg-card p-6 rounded-lg border border-theme">
+                                <h3 class="text-xl font-bold primary-text mb-2">President</h3>
+                                <p>High-level oversight. Approves requisitions and transactions. Can view all data but cannot manage users.</p>
+                            </div>
+                             <div class="bg-card p-6 rounded-lg border border-theme">
+                                <h3 class="text-xl font-bold primary-text mb-2">Captain</h3>
+                                <p>Manages the team roster. Exclusive access to the Player Management page.</p>
+                            </div>
+                            <div class="bg-card p-6 rounded-lg border border-theme">
+                                <h3 class="text-xl font-bold primary-text mb-2">Secretary</h3>
+                                <p>Receives notifications for new requisitions to maintain records.</p>
+                            </div>
+                            <div class="bg-card p-6 rounded-lg border border-theme">
+                                <h3 class="text-xl font-bold primary-text mb-2">Treasurer</h3>
+                                <p>Manages all finances, issues receipts, sets prices, and can input player allowances.</p>
+                            </div>
+                            <div class="bg-card p-6 rounded-lg border border-theme">
+                                <h3 class="text-xl font-bold primary-text mb-2">Treasury Staff</h3>
+                                <p>Assists the treasurer with financial entries and jersey orders.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="social-media-content" class="content-section">
                     <h2 class="text-2xl font-semibold mb-4">Record Social Media Engagements for <span id="current-month-year"></span></h2>
                     <div class="bg-card p-6 rounded-lg border border-theme">
                         <form id="social-media-form">
@@ -365,90 +419,97 @@
                                      </div>
                                  </div>
                              </div>
-                              <button type="submit" class="mt-6 bg-gold text-black font-bold py-2 px-6 rounded-md hover-bg-gold-dark">Save Monthly Data</button>
+                              <button type="submit" class="mt-6 bg-primary text-black font-bold py-2 px-6 rounded-md hover-bg-primary-dark">Save Monthly Data</button>
                         </form>
                     </div>
                 </div>
 
-                <!-- Jersey Orders Content --><div id="jersey-orders-content" class="content-section">
-                    <div class="bg-card p-6 rounded-lg mb-6 border border-theme">
-                        <h3 class="text-xl font-bold mb-4">Add New Jersey Order</h3>
-                        <form id="jersey-order-form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label>Customer Name</label>
-                                <input id="customer-name" type="text" class="w-full p-2 bg-input rounded" required>
-                            </div>
-                            <div>
-                                <label>Customer Email</label>
-                                <input id="customer-email" type="email" class="w-full p-2 bg-input rounded" required>
-                            </div>
-                            <div>
-                                <label>Phone Number</label>
-                                <input id="customer-phone" type="tel" class="w-full p-2 bg-input rounded" required>
-                            </div>
-                             <div>
-                                <label>Jersey Type</label>
-                                <select id="jersey-type" class="w-full p-2 bg-input rounded" required>
-                                    <option value="">Select a type...</option>
-                                    <!-- Options populated by JS --></select>
-                            </div>
-                             <div>
-                                <label>Jersey Size</label>
-                                <select id="jersey-size" class="w-full p-2 bg-input rounded">
-                                    <option>Small</option>
-                                    <option>Medium</option>
-                                    <option>Large</option>
-                                    <option>XL</option>
-                                    <option>XXL</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label>Name on Shirt (Optional)</label>
-                                <input id="shirt-name" type="text" class="w-full p-2 bg-input rounded" placeholder="e.g., OKELLO">
-                            </div>
-                            <div>
-                                 <label>Shirt Number (Optional)</label>
-                                <input id="shirt-number" type="number" class="w-full p-2 bg-input rounded" min="0" max="99" placeholder="e.g., 10">
-                            </div>
-                            <div class="md:col-span-2">
-                                <label>Delivery Location</label>
-                                <input id="delivery-location" type="text" class="w-full p-2 bg-input rounded" required placeholder="e.g., Club House, Main Gate">
-                            </div>
-                             <button type="submit" class="bg-gold text-black font-bold py-2 px-4 rounded-md hover-bg-gold-dark md:col-span-2">Place Order & Send Confirmation</button>
-                        </form>
+                <div id="jersey-orders-content" class="content-section">
+                     <nav class="flex space-x-4 border-b border-theme mb-6">
+                        <a href="#" data-sub-page="jersey-order-form-container" class="sub-nav-link py-2 px-1 font-medium active">New Order</a>
+                        <a href="#" data-sub-page="jersey-orders-list-container" class="sub-nav-link py-2 px-1 font-medium">Manage Orders</a>
+                        <a href="#" data-sub-page="jersey-pricing" class="sub-nav-link py-2 px-1 font-medium">Pricing</a>
+                    </nav>
+
+                    <div id="jersey-order-form-container-sub-section" class="sub-section active">
+                        <div class="bg-card p-6 rounded-lg mb-6 border border-theme">
+                            <h3 class="text-xl font-bold mb-4">Add New Jersey Order</h3>
+                            <form id="jersey-order-form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label>Customer Name</label>
+                                    <input id="customer-name" type="text" class="w-full p-2 bg-input rounded" required>
+                                </div>
+                                <div>
+                                    <label>Customer Email</label>
+                                    <input id="customer-email" type="email" class="w-full p-2 bg-input rounded" required>
+                                </div>
+                                <div>
+                                    <label>Phone Number</label>
+                                    <input id="customer-phone" type="tel" class="w-full p-2 bg-input rounded" required>
+                                </div>
+                                 <div>
+                                    <label>Jersey Type</label>
+                                    <select id="jersey-type" class="w-full p-2 bg-input rounded" required>
+                                        <option value="">Select a type...</option>
+                                        <!-- Options populated by JS --></select>
+                                </div>
+                                 <div>
+                                    <label>Jersey Size</label>
+                                    <select id="jersey-size" class="w-full p-2 bg-input rounded">
+                                        <option>Small</option>
+                                        <option>Medium</option>
+                                        <option>Large</option>
+                                        <option>XL</option>
+                                        <option>XXL</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label>Name on Shirt (Optional)</label>
+                                    <input id="shirt-name" type="text" class="w-full p-2 bg-input rounded" placeholder="e.g., OKELLO">
+                                </div>
+                                <div>
+                                     <label>Shirt Number (Optional)</label>
+                                    <input id="shirt-number" type="number" class="w-full p-2 bg-input rounded" min="0" max="99" placeholder="e.g., 10">
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label>Delivery Location</label>
+                                    <input id="delivery-location" type="text" class="w-full p-2 bg-input rounded" required placeholder="e.g., Club House, Main Gate">
+                                </div>
+                                 <button type="submit" class="bg-primary text-black font-bold py-2 px-4 rounded-md hover-bg-primary-dark md:col-span-2">Place Order & Send Confirmation</button>
+                            </form>
+                        </div>
                     </div>
-                    <h2 class="text-2xl font-semibold mb-4">Manage Jersey Orders</h2>
-                    <div id="jersey-orders-list" class="bg-card p-4 rounded-lg border border-theme overflow-x-auto">
-                        <!-- Jersey orders will be dynamically added here --></div>
+                    <div id="jersey-orders-list-container-sub-section" class="sub-section">
+                         <h2 class="text-2xl font-semibold mb-4">Manage Jersey Orders</h2>
+                        <div id="jersey-orders-list" class="bg-card p-4 rounded-lg border border-theme overflow-x-auto"></div>
+                    </div>
+                    <div id="jersey-pricing-sub-section" class="sub-section">
+                        <div class="bg-card p-6 rounded-lg mb-6 border border-theme">
+                            <h3 class="text-xl font-bold mb-4">Add or Update Jersey Type</h3>
+                            <form id="jersey-pricing-form" class="flex flex-wrap items-end gap-4">
+                                <div>
+                                    <label for="jersey-type-name">Jersey Type Name</label>
+                                    <input id="jersey-type-name" type="text" placeholder="e.g., Home Kit 2025" class="w-full p-2 bg-input rounded" required>
+                                </div>
+                                <div>
+                                    <label for="jersey-price-input">Price (UGX)</label>
+                                    <input id="jersey-price-input" type="number" class="w-full p-2 bg-input rounded" required min="0">
+                                </div>
+                                <button type="submit" class="bg-primary text-black font-bold py-2 px-4 rounded-md hover-bg-primary-dark">Save / Update</button>
+                            </form>
+                             <p class="text-sm mt-2 text-gray-500 dark:text-gray-400">This will add a new jersey type or update the price of an existing one.</p>
+                        </div>
+
+                        <h2 class="text-2xl font-semibold mb-4">Current Jersey Prices</h2>
+                        <div id="jersey-types-list" class="bg-card p-4 rounded-lg border border-theme"></div>
+                    </div>
                 </div>
 
-                <!-- Jersey Pricing Content --><div id="jersey-pricing-content" class="content-section">
-                    <div class="bg-card p-6 rounded-lg mb-6 border border-theme">
-                        <h3 class="text-xl font-bold mb-4">Add or Update Jersey Type</h3>
-                        <form id="jersey-pricing-form" class="flex flex-wrap items-end gap-4">
-                            <div>
-                                <label for="jersey-type-name">Jersey Type Name</label>
-                                <input id="jersey-type-name" type="text" placeholder="e.g., Home Kit 2025" class="w-full p-2 bg-input rounded" required>
-                            </div>
-                            <div>
-                                <label for="jersey-price-input">Price (UGX)</label>
-                                <input id="jersey-price-input" type="number" class="w-full p-2 bg-input rounded" required min="0">
-                            </div>
-                            <button type="submit" class="bg-gold text-black font-bold py-2 px-4 rounded-md hover-bg-gold-dark">Save / Update</button>
-                        </form>
-                         <p class="text-sm mt-2 text-gray-500 dark:text-gray-400">This will add a new jersey type or update the price of an existing one.</p>
-                    </div>
-
-                    <h2 class="text-2xl font-semibold mb-4">Current Jersey Prices</h2>
-                    <div id="jersey-types-list" class="bg-card p-4 rounded-lg border border-theme">
-                        <!-- Jersey types will be dynamically added here --></div>
-                </div>
-
-                <!-- Player Registration Content --><div id="player-registration-content" class="content-section">
+                <div id="player-registration-content" class="content-section">
                     <div class="bg-card p-6 rounded-lg mb-6 border border-theme">
                         <h3 class="text-xl font-bold mb-4">Register New Player</h3>
                         <form id="player-registration-form">
-                            <!-- Player Details --><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
                                 <div>
                                     <label>Player's Full Name</label>
                                     <input id="player-name" type="text" class="w-full p-2 bg-input rounded" required>
@@ -475,53 +536,11 @@
                                     <input id="player-jersey" type="number" class="w-full p-2 bg-input rounded" min="1" max="99" required>
                                 </div>
                             </div>
-                            <button type="submit" class="mt-6 bg-gold text-black font-bold py-2 px-6 rounded-md hover-bg-gold-dark">Add Player</button>
+                            <button type="submit" class="mt-6 bg-primary text-black font-bold py-2 px-6 rounded-md hover-bg-primary-dark">Add Player</button>
                         </form>
                     </div>
                     <h2 class="text-2xl font-semibold mb-4">Player Game Week & Allowance Tracker</h2>
-                    <div id="players-list" class="bg-card p-4 rounded-lg border border-theme overflow-x-auto">
-                        <!-- Player list will be dynamically added here --></div>
-                </div>
-
-                <!-- Role Descriptions Content -->
-                <div id="role-descriptions-content" class="content-section">
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <!-- Admin -->
-                        <div class="bg-card p-6 rounded-lg border border-theme">
-                            <h3 class="text-xl font-bold gold-text mb-2">Admin</h3>
-                            <p>Full control over the application. Can manage users, view all financial data, approve transactions, manage player registrations, and send alerts. The only role that can add new users.</p>
-                        </div>
-                        <!-- President -->
-                        <div class="bg-card p-6 rounded-lg border border-theme">
-                            <h3 class="text-xl font-bold gold-text mb-2">President</h3>
-                            <p>High-level oversight. Can view all data, approve requisitions and financial transactions, and send alerts. Cannot add or manage user accounts or player registrations.</p>
-                        </div>
-                         <!-- Captain -->
-                        <div class="bg-card p-6 rounded-lg border border-theme">
-                            <h3 class="text-xl font-bold gold-text mb-2">Captain</h3>
-                            <p>Manages the team roster. Has exclusive access to the Player Registration page to add new players and track game week participation.</p>
-                        </div>
-                        <!-- Treasurer -->
-                        <div class="bg-card p-6 rounded-lg border border-theme">
-                            <h3 class="text-xl font-bold gold-text mb-2">Treasurer</h3>
-                            <p>Manages all financial aspects. Can add financial transactions for approval, issue receipts, set jersey prices, and view all financial records. Has access to player allowance information.</p>
-                        </div>
-                        <!-- Treasury Staff -->
-                        <div class="bg-card p-6 rounded-lg border border-theme">
-                            <h3 class="text-xl font-bold gold-text mb-2">Treasury Staff</h3>
-                            <p>Assists the treasurer. Can add financial transactions for approval, issue receipts, and manage jersey orders.</p>
-                        </div>
-                        <!-- Social Media -->
-                        <div class="bg-card p-6 rounded-lg border border-theme">
-                            <h3 class="text-xl font-bold gold-text mb-2">Social Media Manager</h3>
-                            <p>Responsible for tracking engagement. Can view the main dashboard and add/update social media statistics for their assigned platform.</p>
-                        </div>
-                        <!-- General User -->
-                        <div class="bg-card p-6 rounded-lg border border-theme">
-                            <h3 class="text-xl font-bold gold-text mb-2">General User</h3>
-                            <p>Has basic access. Can view the dashboard, submit requisitions for approval, and participate in the chat room.</p>
-                        </div>
-                    </div>
+                    <div id="players-list" class="bg-card p-4 rounded-lg border border-theme overflow-x-auto"></div>
                 </div>
 
             </div>
@@ -738,7 +757,7 @@
                     <div class="text-right mb-6">
                         <a href="#" id="forgot-password-link" class="text-sm text-yellow-400 hover:underline">Forgot Password?</a>
                     </div>
-                    <button type="submit" class="w-full bg-gold text-black font-bold py-3 rounded-md hover-bg-gold-dark">Login</button>
+                    <button type="submit" class="w-full bg-primary text-black font-bold py-3 rounded-md hover-bg-primary-dark">Login</button>
                 </form>
             `;
         }
@@ -752,7 +771,7 @@
                         <label for="signup-password" class="block text-sm font-medium mb-2">Choose a Password</label>
                         <input type="password" id="signup-password" class="w-full p-3 bg-input rounded-md border border-theme" required>
                     </div>
-                    <button type="submit" class="w-full bg-gold text-black font-bold py-3 rounded-md hover-bg-gold-dark">Complete Sign-Up</button>
+                    <button type="submit" class="w-full bg-primary text-black font-bold py-3 rounded-md hover-bg-primary-dark">Complete Sign-Up</button>
                 </form>
             `;
         }
@@ -912,7 +931,6 @@
                 <a href="#" data-page="dashboard-content" class="nav-link flex items-center gap-4 py-2 px-4 rounded hover:bg-gray-700"><i class="fas fa-tachometer-alt w-6 text-center"></i><span class="nav-text">Dashboard</span></a>
                 <a href="#" data-page="requisitions-content" class="nav-link flex items-center gap-4 py-2 px-4 rounded hover:bg-gray-700"><i class="fas fa-file-invoice w-6 text-center"></i><span class="nav-text">Requisitions</span></a>
                 <a href="#" data-page="chat-content" class="nav-link flex items-center gap-4 py-2 px-4 rounded hover:bg-gray-700"><i class="fas fa-comments w-6 text-center"></i><span class="nav-text">Chat Room</span></a>
-                <a href="#" data-page="role-descriptions-content" class="nav-link flex items-center gap-4 py-2 px-4 rounded hover:bg-gray-700"><i class="fas fa-info-circle w-6 text-center"></i><span class="nav-text">Role Descriptions</span></a>
             `;
 
             if (currentUserRole === 'captain') {
@@ -922,9 +940,6 @@
             if (['admin', 'treasurer', 'treasury_staff', 'president'].includes(currentUserRole)) {
                 navLinks += `
                     <a href="#" data-page="finances-content" class="nav-link flex items-center gap-4 py-2 px-4 rounded hover:bg-gray-700"><i class="fas fa-coins w-6 text-center"></i><span class="nav-text">Finances</span></a>
-                    <a href="#" data-page="receipts-content" class="nav-link flex items-center gap-4 py-2 px-4 rounded hover:bg-gray-700"><i class="fas fa-receipt w-6 text-center"></i><span class="nav-text">Issue Receipts</span></a>
-                    <a href="#" data-page="view-receipts-content" class="nav-link flex items-center gap-4 py-2 px-4 rounded hover:bg-gray-700"><i class="fas fa-eye w-6 text-center"></i><span class="nav-text">View Receipts</span></a>
-                    <a href="#" data-page="financial-reports-content" class="nav-link flex items-center gap-4 py-2 px-4 rounded hover:bg-gray-700"><i class="fas fa-file-pdf w-6 text-center"></i><span class="nav-text">Financial Reports</span></a>
                     <a href="#" data-page="jersey-orders-content" class="nav-link flex items-center gap-4 py-2 px-4 rounded hover:bg-gray-700"><i class="fas fa-tshirt w-6 text-center"></i><span class="nav-text">Jersey Orders</span></a>
                 `;
             }
@@ -956,12 +971,12 @@
                 link.addEventListener('click', (e) => {
                     e.preventDefault();
                     showPage(e.currentTarget.dataset.page);
-                    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('bg-gold', 'text-black', 'dark:text-black'));
-                    e.currentTarget.classList.add('bg-gold', 'text-black', 'dark:text-black');
+                    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('bg-primary', 'text-black', 'dark:text-black'));
+                    e.currentTarget.classList.add('bg-primary', 'text-black', 'dark:text-black');
                 });
             });
             const activeLink = document.querySelector('.nav-link[data-page="dashboard-content"]');
-            if(activeLink) activeLink.classList.add('bg-gold', 'text-black', 'dark:text-black');
+            if(activeLink) activeLink.classList.add('bg-primary', 'text-black', 'dark:text-black');
 
             // Initialize all data listeners
             listenForJerseyTypes();
