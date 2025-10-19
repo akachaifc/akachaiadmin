@@ -1,1074 +1,587 @@
 <!DOCTYPE html>
-<html lang="en" class="dark"> <!-- Default to dark mode --><head>
+<html lang="en">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AKACHAI ADMIN PORTAL</title>
-    <link rel="icon" type="image/png" href="https://i.ibb.co/x8KnbRxQ/1000324643-92de31910003d42fc3ade892f8059b77-8-7-2025-1-30-00-PM-removebg-preview.png">
-    <!-- Tailwind CSS --><script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome for icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- Chart.js for graphs --><script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- EmailJS for sending emails --><script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-    <!-- jsPDF for PDF generation --><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <!-- jsPDF-AutoTable for tables in PDFs --><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
-    <!-- QR Code Generator --><script src="https://cdn.jsdelivr.net/npm/qrcode-generator/qrcode.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <title>Akachai FC Admin Portal</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
 
+    <!-- External Libraries for PDF, QR Codes & Charts -->
+    <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator/qrcode.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        /* Light & Dark Mode Theme variables */
         :root {
-            --bg-color: #F3F4F6; /* light: gray-100 */
-            --text-color: #1F2937; /* light: gray-800 */
-            --card-bg: #FFFFFF; /* light: white */
-            --border-color: #D1D5DB; /* light: gray-300 */
-            --input-bg: #F9FAFB; /* light: gray-50 */
-            --primary-color: #EA580C; /* light: orange-600 */
-            --primary-text: #EA580C;
-            --primary-hover: #C2410C; /* light: orange-700 */
+            --bg-primary: #18181b; /* Zinc 900 */
+            --bg-secondary: #27272a; /* Zinc 800 */
+            --bg-sidebar: #09090b; /* Zinc 950 */
+            --text-primary: #f4f4f5; /* Zinc 100 */
+            --text-secondary: #a1a1aa; /* Zinc 400 */
+            --border-color: #3f3f46; /* Zinc 700 */
+            --accent: #D4AF37; /* Gold */
+            --accent-hover: #c09b30; /* Darker Gold */
         }
 
-        html.dark {
-            --bg-color: #111827; /* dark: gray-900 */
-            --text-color: #F9FAFB; /* dark: gray-50 */
-            --card-bg: #1F2937; /* dark: gray-800 */
-            --border-color: #4B5563; /* dark: gray-600 */
-            --input-bg: #374151; /* dark: gray-700 */
-            --primary-color: #D4AF37; /* dark: gold */
-            --primary-text: #D4AF37;
-            --primary-hover: #b89b31; /* dark: gold-hover */
+        [data-theme="light"] {
+            --bg-primary: #f1f5f9; /* Slate 100 */
+            --bg-secondary: #ffffff;
+            --bg-sidebar: #ffffff;
+            --text-primary: #1e293b; /* Slate 800 */
+            --text-secondary: #64748b; /* Slate 500 */
+            --border-color: #e2e8f0; /* Slate 200 */
+            --accent: #F97316; /* Orange 500 */
+            --accent-hover: #EA580C; /* Orange 600 */
         }
 
         body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
             font-family: 'Inter', sans-serif;
-            transition: background-color 0.3s, color 0.3s;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
         }
-
-        .primary-text { color: var(--primary-text); }
-        .bg-card { background-color: var(--card-bg); }
-        .border-theme { border-color: var(--border-color); }
-        .bg-input { background-color: var(--input-bg); }
-        .bg-primary { background-color: var(--primary-color); }
-        .hover-bg-primary-dark:hover { background-color: var(--primary-hover); }
-
-        /* Custom scrollbar */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: var(--card-bg); }
-        ::-webkit-scrollbar-thumb { background: var(--primary-color); border-radius: 4px; }
-
-        .content-section, .sub-section { display: none; }
-        .content-section.active, .sub-section.active { display: block; }
+        .sidebar {
+            transition: transform 0.3s ease-in-out;
+            background-color: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
+        }
+        .main-content {
+            transition: margin-left 0.3s ease-in-out;
+        }
+        @media (min-width: 1024px) {
+            .main-content-expanded {
+                margin-left: 16rem; /* w-64 */
+            }
+        }
+        .modal { display: none; }
+        .modal.active { display: flex; }
         
-        .loader {
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid var(--primary-color);
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        /* Sidebar styles */
-        #sidebar.collapsed { width: 5rem; }
-        #sidebar.collapsed .nav-text, #sidebar.collapsed .sidebar-title { display: none; }
-        #sidebar.collapsed .nav-link { justify-content: center; }
+        /* Theming classes */
+        .bg-primary { background-color: var(--bg-primary); }
+        .bg-secondary { background-color: var(--bg-secondary); }
+        .text-primary { color: var(--text-primary); }
+        .text-secondary { color: var(--text-secondary); }
+        .border-themed { border-color: var(--border-color); }
+        .bg-accent { background-color: var(--accent); }
+        .bg-accent-hover:hover { background-color: var(--accent-hover); }
+        .text-accent { color: var(--accent); }
 
-        /* Sub-tab styles */
-        .sub-nav-link {
-            transition: all 0.2s;
-            border-bottom: 2px solid transparent;
+        .sidebar-link.active {
+            background-color: var(--accent);
+            color: white; /* High contrast for both themes */
         }
-        .sub-nav-link.active {
-            border-bottom-color: var(--primary-color);
-            color: var(--primary-text);
+        [data-theme="light"] .sidebar-link.active {
+            color: white;
         }
     </style>
 </head>
 <body class="antialiased">
 
-    <!-- Loading Overlay --><div id="loading-overlay" class="fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center hidden">
-        <div class="loader"></div>
+    <!-- Loading Spinner -->
+    <div id="loading-spinner" class="fixed inset-0 bg-secondary bg-opacity-75 flex items-center justify-center z-50">
+        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-[var(--accent)]"></div>
     </div>
 
-    <!-- Login/Signup Section --><section id="auth-section" class="flex items-center justify-center min-h-screen p-4">
-        <div class="bg-card p-8 rounded-lg shadow-lg w-full max-w-md border border-theme">
-             <img src="https://i.ibb.co/x8KnbRxQ/1000324643-92de31910003d42fc3ade892f8059b77-8-7-2025-1-30-00-PM-removebg-preview.png" alt="AKACHAI FC Logo" class="h-20 w-20 mx-auto mb-4 object-contain">
-            <h1 id="auth-title" class="text-3xl font-bold text-center primary-text mb-6">AKACHAI ADMIN PORTAL</h1>
-            <div id="auth-container">
-                <!-- This will be populated by JS for login, signup, or link completion -->
+    <!-- Login View -->
+    <div id="login-view" class="min-h-screen flex items-center justify-center bg-primary">
+        <div class="max-w-md w-full bg-secondary rounded-lg shadow-md p-8 border border-themed">
+            <div class="text-center mb-6">
+                <div class="flex justify-center">
+                    <div class="bg-white p-2 rounded-full mb-4">
+                        <img src="https://i.ibb.co/VYsxrJPB/1000324643-92de31910003d42fc3ade892f8059b77-8-7-2025-1-30-00-PM-removebg-preview.png" alt="Akachai FC Logo" class="h-16 w-16">
+                    </div>
+                </div>
+                <h1 class="text-3xl font-bold text-accent">Akachai FC Portal</h1>
+                <p class="text-secondary mt-2">Please sign in to continue</p>
             </div>
-            <p id="auth-error" class="text-red-500 text-center mt-4"></p>
+            <form id="login-form">
+                <div class="mb-4">
+                    <label for="email" class="block text-sm font-medium text-secondary mb-1">Email Address</label>
+                    <input type="email" id="email" required class="w-full px-4 py-2 bg-primary border border-themed rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--accent)] text-primary">
+                </div>
+                <div class="mb-6">
+                    <label for="password" class="block text-sm font-medium text-secondary mb-1">Password</label>
+                    <div class="relative">
+                        <input type="password" id="password" required class="w-full px-4 py-2 pr-10 bg-primary border border-themed rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--accent)] text-primary">
+                        <button type="button" id="toggle-password-visibility" class="absolute inset-y-0 right-0 px-3 flex items-center text-secondary">
+                            <i data-lucide="eye" class="h-5 w-5"></i>
+                            <i data-lucide="eye-off" class="h-5 w-5 hidden"></i>
+                        </button>
+                    </div>
+                </div>
+                <p id="login-error" class="text-red-500 text-sm mb-4 hidden"></p>
+                <button type="submit" class="w-full bg-accent text-white font-bold py-2 px-4 rounded-md bg-accent-hover transition duration-300">
+                    Sign In
+                </button>
+            </form>
         </div>
-    </section>
+    </div>
+
+    <!-- Main Application View -->
+    <div id="app-view" class="hidden h-screen flex">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="w-64 fixed inset-y-0 left-0 z-30 transform -translate-x-full lg:translate-x-0">
+            <div class="p-4 flex items-center justify-between border-b border-themed">
+                <a href="#dashboard" class="flex items-center space-x-3">
+                    <div class="bg-white p-1 rounded-full">
+                         <img src="https://i.ibb.co/VYsxrJPB/1000324643-92de31910003d42fc3ade892f8059b77-8-7-2025-1-30-00-PM-removebg-preview.png" alt="Akachai FC Logo" class="h-10 w-10">
+                    </div>
+                    <span class="text-xl font-bold text-primary">Akachai FC</span>
+                </a>
+            </div>
+            <nav id="sidebar-nav" class="mt-4 flex flex-col h-full pb-16">
+                <!-- Nav links will be rendered here by JS -->
+                <div class="mt-auto p-4 border-t border-themed">
+                     <button id="logout-btn" class="w-full flex items-center py-2 px-4 rounded-md text-secondary hover:bg-red-600 hover:text-white transition-colors">
+                        <i data-lucide="log-out" class="h-5 w-5 mr-3"></i> Logout
+                    </button>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <div id="main-content" class="flex-1 flex flex-col overflow-hidden lg:main-content-expanded">
+            <!-- Header -->
+            <header class="bg-secondary shadow-sm p-4 flex items-center justify-between border-b border-themed">
+                <div class="flex items-center">
+                    <button id="open-sidebar-btn" class="lg:hidden text-primary mr-4">
+                        <i data-lucide="menu" class="h-6 w-6"></i>
+                    </button>
+                    <h1 id="page-title" class="text-2xl font-bold text-primary">Dashboard</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button id="theme-toggle-btn" class="p-2 rounded-full hover:bg-[var(--border-color)] text-primary">
+                        <i data-lucide="sun" class="h-5 w-5 hidden" id="theme-sun-icon"></i>
+                        <i data-lucide="moon" class="h-5 w-5" id="theme-moon-icon"></i>
+                    </button>
+                    <div id="current-user-display" class="text-right">
+                        <p class="font-semibold text-primary"></p>
+                        <p class="text-sm text-secondary"></p>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Page Content Area -->
+            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-primary p-6">
+                <!-- All pages will be rendered here and toggled -->
+                <!-- Dashboard Page -->
+                <div id="dashboard-page" class="page-content">
+                    <!-- Dashboard content will be rendered by JS -->
+                </div>
+                <!-- Finances Page -->
+                <div id="finances-page" class="page-content hidden">
+                    <!-- Finances content will be rendered by JS -->
+                </div>
+                <!-- Requisitions Page -->
+                <div id="requisitions-page" class="page-content hidden">
+                     <!-- Requisitions content will be rendered by JS -->
+                </div>
+                <!-- Orders Page -->
+                <div id="orders-page" class="page-content hidden">
+                    <!-- Orders content will be rendered by JS -->
+                </div>
+                <!-- Player Roster Page -->
+                <div id="player_roster-page" class="page-content hidden">
+                    <!-- Roster content will be rendered by JS -->
+                </div>
+                <!-- Social Media Page -->
+                <div id="social_media-page" class="page-content hidden">
+                    <!-- Social Media content will be rendered by JS -->
+                </div>
+                <!-- Administration Page -->
+                <div id="administration-page" class="page-content hidden">
+                    <!-- Administration content will be rendered by JS -->
+                </div>
+            </main>
+        </div>
+    </div>
     
-    <!-- Main App Section --><main id="app-section" class="hidden">
-        <div class="relative min-h-screen md:flex">
-             <!-- Mobile overlay --><div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden hidden"></div>
-            <!-- Sidebar Navigation --><aside id="sidebar" class="w-64 bg-card fixed inset-y-0 left-0 p-4 border-r border-theme flex flex-col transform -translate-x-full md:relative md:translate-x-0 z-30 transition-all duration-300 ease-in-out">
-                <div class="text-center mb-8">
-                    <img src="https://i.ibb.co/x8KnbRxQ/1000324643-92de31910003d42fc3ade892f8059b77-8-7-2025-1-30-00-PM-removebg-preview.png" alt="AKACHAI FC Logo" class="h-16 w-16 mx-auto mb-2 object-contain">
-                    <h2 class="text-2xl font-bold primary-text sidebar-title">Akachai FC</h2>
-                </div>
-                <nav id="main-nav" class="space-y-2 flex-grow overflow-y-auto">
-                    <!-- Nav links will be injected by JS based on role --></nav>
-                <div class="mt-auto pt-4">
-                    <button id="sidebar-toggle-btn" class="w-full mb-2 text-gray-500 hover:text-primary-text py-2 px-4 rounded-md hidden md:block">
-                        <i class="fas fa-chevron-left"></i>
-                    </button>
-                     <button id="logout-btn" class="w-full bg-red-600 text-white font-bold py-2 px-4 rounded-md hover:bg-red-700 transition-colors flex items-center justify-center gap-2">
-                        <i class="fas fa-sign-out-alt"></i><span class="nav-text">Logout</span>
-                    </button>
-                </div>
-            </aside>
+    <!-- Modals will be injected here by JS -->
+    <div id="modal-container"></div>
+    
+    <!-- Hidden element for PDF generation -->
+    <div id="pdf-receipt-template" class="hidden"></div>
 
-            <!-- Main Content Area --><div id="main-content" class="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto">
-                <header class="flex justify-between items-center mb-8">
-                     <button id="hamburger-btn" class="text-2xl md:hidden">
-                        <i class="fas fa-bars"></i>
-                    </button>
-                    <h1 id="page-title" class="text-3xl md:text-5xl font-extrabold primary-text">Dashboard</h1>
-                    <div class="flex items-center gap-4">
-                        <button id="theme-toggle-btn" class="text-2xl">
-                           <i class="fas fa-sun"></i> <!-- Icon changes dynamically --></button>
-                        <div class="relative">
-                             <i class="fas fa-bell text-2xl cursor-pointer" id="notification-icon"></i>
-                             <span id="notification-badge" class="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center hidden">0</span>
-                        </div>
-                        <div id="user-profile" class="text-right hidden sm:block">
-                            <p class="font-semibold text-lg" id="user-name-display"></p>
-                            <p class="text-sm text-gray-500 dark:text-gray-400" id="user-role-display"></p>
-                        </div>
-                    </div>
-                </header>
 
-                <!-- All content sections go here -->
-                <div id="dashboard-content" class="content-section active">
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-                        <div class="lg:col-span-2 bg-card p-4 rounded-lg shadow-md border border-theme">
-                            <h2 class="text-2xl font-semibold mb-4">Social Media Engagement</h2>
-                            <canvas id="engagements-chart"></canvas>
-                        </div>
-                        <div class="bg-card p-4 rounded-lg shadow-md border border-theme flex flex-col items-center justify-center">
-                             <h2 class="text-2xl font-semibold mb-4">Season Progress</h2>
-                             <canvas id="season-progress-chart" class="max-w-[250px] mx-auto"></canvas>
-                             <div id="season-settings-section" class="mt-4 w-full">
-                                <!-- Admin-only season settings form will go here -->
-                             </div>
-                        </div>
-                    </div>
-                     <div class="bg-card p-6 rounded-lg mb-6 border border-theme">
-                        <h2 class="text-2xl font-semibold mb-4">Upcoming Events</h2>
-                        <div id="upcoming-events-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                           <!-- Event posters will be displayed here -->
-                        </div>
-                         <div id="manage-events-section" class="mt-6 pt-4 border-t border-theme">
-                           <!-- Admin/President event upload form will go here -->
-                        </div>
-                    </div>
-                    <div id="admin-alerts-section" class="mt-8">
-                        <h2 class="text-2xl font-semibold mb-4">Send Important Alert</h2>
-                        <div class="bg-card p-4 rounded-lg shadow-md border border-theme">
-                           <textarea id="alert-message" class="w-full p-3 bg-input rounded-md border border-theme" rows="3" placeholder="Type your alert message here..."></textarea>
-                           <button id="send-alert-btn" class="mt-2 bg-primary text-black font-bold py-2 px-4 rounded-md hover-bg-primary-dark">Send Alert</button>
-                        </div>
-                    </div>
-                </div>
+    <!-- Main Application Script -->
+    <script type="module">
+        // Firebase Imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, onSnapshot, getDoc, setDoc, addDoc, updateDoc, deleteDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-                <div id="requisitions-content" class="content-section">
-                    <button id="new-requisition-btn" class="bg-primary text-black font-bold py-2 px-4 rounded-md hover-bg-primary-dark mb-4">New Requisition</button>
-                    <div id="new-requisition-form-container" class="bg-card p-6 rounded-lg mb-6 hidden border border-theme">
-                        <h3 class="text-xl font-bold mb-4">Requisition Form</h3>
-                        <form id="requisition-form">
-                             <input type="text" id="req-name" placeholder="Your Name" class="w-full p-2 mb-2 bg-input rounded" required>
-                             <textarea id="req-reason" placeholder="Reason for Requisition" class="w-full p-2 mb-2 bg-input rounded" required></textarea>
-                             <div id="req-items-container">
-                                <div class="flex gap-2 mb-2 items-center">
-                                    <input type="text" placeholder="Item Description" class="w-1/2 p-2 bg-input rounded req-item-desc" required>
-                                    <input type="number" placeholder="Qty" class="w-1/6 p-2 bg-input rounded req-item-qty" required min="1" step="any">
-                                    <input type="number" placeholder="Unit Price" class="w-1/4 p-2 bg-input rounded req-item-price" required min="0" step="any">
-                                </div>
-                             </div>
-                             <button type="button" id="add-req-item-btn" class="text-sm bg-gray-500 dark:bg-gray-600 py-1 px-3 rounded hover:bg-gray-400 dark:hover:bg-gray-500 mb-4">Add Another Item</button>
-                             <button type="submit" class="bg-primary text-black font-bold py-2 px-4 rounded-md hover-bg-primary-dark">Submit for Approval</button>
-                        </form>
-                    </div>
-                    <h2 class="text-2xl font-semibold mb-4">Requisition History & Approvals</h2>
-                    <div id="requisitions-list" class="space-y-4"></div>
-                </div>
-
-                <div id="finances-content" class="content-section">
-                    <nav class="flex space-x-4 border-b border-theme mb-6">
-                        <a href="#" data-sub-page="transactions" class="sub-nav-link py-2 px-1 font-medium active">Transactions</a>
-                        <a href="#" data-sub-page="issue-receipts" class="sub-nav-link py-2 px-1 font-medium">Issue Receipts</a>
-                        <a href="#" data-sub-page="view-receipts" class="sub-nav-link py-2 px-1 font-medium">View Receipts</a>
-                        <a href="#" data-sub-page="reports" class="sub-nav-link py-2 px-1 font-medium">Reports</a>
-                    </nav>
-
-                    <div id="transactions-sub-section" class="sub-section active">
-                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                            <div class="bg-card p-4 rounded-lg border border-theme">
-                                <h3 class="text-lg font-bold text-green-500">Total Credit (Inflow)</h3>
-                                <p id="total-inflow" class="text-3xl font-semibold">0.00</p>
-                            </div>
-                            <div class="bg-card p-4 rounded-lg border border-theme">
-                                <h3 class="text-lg font-bold text-red-500">Total Debit (Outflow)</h3>
-                                <p id="total-outflow" class="text-3xl font-semibold">0.00</p>
-                            </div>
-                        </div>
-                        <div id="pending-transactions-section" class="mb-8">
-                            <h2 class="text-2xl font-semibold mb-4">Pending Transactions for Approval</h2>
-                            <div id="pending-transactions-list" class="space-y-4"></div>
-                        </div>
-                         <div class="bg-card p-6 rounded-lg mb-6 border border-theme">
-                            <h3 class="text-xl font-bold mb-4">Submit New Transaction for Approval</h3>
-                            <form id="transaction-form" class="flex flex-wrap gap-4 items-end">
-                                <div class="flex-grow">
-                                    <label>Description</label>
-                                    <input id="trans-desc" type="text" placeholder="e.g., Purchase of new balls" class="w-full p-2 bg-input rounded" required>
-                                </div>
-                                <div class="flex-grow">
-                                    <label>Amount</label>
-                                    <input id="trans-amount" type="number" placeholder="1000" class="w-full p-2 bg-input rounded" required min="0" step="any">
-                                </div>
-                                <div class="flex-grow">
-                                    <label>Type</label>
-                                    <select id="trans-type" class="w-full p-2 bg-input rounded">
-                                        <option value="credit">Credit (Inflow)</option>
-                                        <option value="debit">Debit (Outflow)</option>
-                                    </select>
-                                </div>
-                                <button type="submit" class="bg-primary text-black font-bold py-2 px-4 rounded-md hover-bg-primary-dark">Submit for Approval</button>
-                            </form>
-                        </div>
-                        <h2 class="text-2xl font-semibold mb-4">Approved Transaction History</h2>
-                        <div id="transactions-list" class="bg-card p-4 rounded-lg border border-theme"></div>
-                    </div>
-                    <div id="issue-receipts-sub-section" class="sub-section">
-                        <div class="bg-card p-6 rounded-lg border border-theme">
-                            <form id="receipt-form">
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label>Payer's Name</label>
-                                        <input id="payer-name" type="text" class="w-full p-2 bg-input rounded" required>
-                                    </div>
-                                    <div>
-                                        <label>Payer's Email</label>
-                                        <input id="payer-email" type="email" class="w-full p-2 bg-input rounded" required>
-                                    </div>
-                                    <div>
-                                        <label>Amount Paid</label>
-                                        <input id="payment-amount" type="number" class="w-full p-2 bg-input rounded" required min="1" step="any">
-                                    </div>
-                                    <div>
-                                        <label>Payment For</label>
-                                        <input id="payment-purpose" type="text" placeholder="e.g., Club Membership" class="w-full p-2 bg-input rounded" required>
-                                    </div>
-                                </div>
-                                <button type="submit" class="mt-4 bg-primary text-black font-bold py-2 px-6 rounded-md hover-bg-primary-dark">Generate & Send Receipt</button>
-                            </form>
-                        </div>
-                    </div>
-                    <div id="view-receipts-sub-section" class="sub-section">
-                         <div id="receipts-list-view" class="bg-card p-4 rounded-lg border border-theme"></div>
-                    </div>
-                    <div id="reports-sub-section" class="sub-section">
-                         <div class="bg-card p-6 rounded-lg mb-6 border border-theme">
-                            <h3 class="text-xl font-bold mb-4">Generate Financial Report</h3>
-                            <form id="report-form" class="flex flex-wrap gap-4 items-end">
-                                <div>
-                                    <label for="start-date">Start Date</label>
-                                    <input id="start-date" type="date" class="w-full p-2 bg-input rounded" required>
-                                </div>
-                                <div>
-                                    <label for="end-date">End Date</label>
-                                    <input id="end-date" type="date" class="w-full p-2 bg-input rounded" required>
-                                </div>
-                                <button id="generate-report-btn" class="bg-primary text-black font-bold py-2 px-4 rounded-md hover-bg-primary-dark">Generate PDF</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="chat-content" class="content-section">
-                    <h2 class="text-2xl font-semibold mb-4">Club Chat Room</h2>
-                    <div class="bg-card rounded-lg h-[70vh] flex flex-col border border-theme">
-                        <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-4"></div>
-                        <div class="p-4 border-t border-theme">
-                            <form id="chat-form" class="flex gap-2">
-                                <input id="chat-input" type="text" placeholder="Type a message..." class="flex-1 p-2 bg-input rounded" required>
-                                <button type="submit" class="bg-primary text-black font-bold py-2 px-4 rounded-md hover-bg-primary-dark">Send</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="user-management-content" class="content-section">
-                     <nav class="flex space-x-4 border-b border-theme mb-6">
-                        <a href="#" data-sub-page="invite-user" class="sub-nav-link py-2 px-1 font-medium active">Invite User</a>
-                        <a href="#" data-sub-page="role-descriptions" class="sub-nav-link py-2 px-1 font-medium">Role Descriptions</a>
-                    </nav>
-                    <div id="invite-user-sub-section" class="sub-section active">
-                        <div class="bg-card p-6 rounded-lg mb-6 border border-theme">
-                            <h3 class="text-xl font-bold mb-4">Invite New User</h3>
-                            <form id="add-user-form" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-                                <div class="md:col-span-1">
-                                    <label>Full Name</label>
-                                    <input id="new-user-name" type="text" class="w-full p-2 bg-input rounded" required>
-                                </div>
-                                <div class="md:col-span-1">
-                                    <label>Email</label>
-                                    <input id="new-user-email" type="email" class="w-full p-2 bg-input rounded" required>
-                                </div>
-                                <div class="md:col-span-1">
-                                    <label>Role</label>
-                                    <select id="new-user-role" class="w-full p-2 bg-input rounded">
-                                        <option value="user">General User</option>
-                                        <option value="captain">Captain</option>
-                                        <option value="secretary">Secretary</option>
-                                        <option value="treasurer">Treasurer</option>
-                                        <option value="president">President</option>
-                                        <option value="admin">Admin</option>
-                                        <option value="social_media_x">Social Media (X)</option>
-                                        <option value="social_media_ig_main">Social Media (Instagram Main)</option>
-                                        <option value="social_media_ig_fan">Social Media (Instagram Fan)</option>
-                                        <option value="social_media_whatsapp">Social Media (WhatsApp)</option>
-                                        <option value="social_media_tiktok">Social Media (TikTok)</option>
-                                        <option value="treasury_staff">Treasury Staff</option>
-                                    </select>
-                                </div>
-                                 <button type="submit" class="bg-primary text-black font-bold py-2 px-4 rounded-md hover-bg-primary-dark">Send Invite</button>
-                            </form>
-                            <p class="text-sm mt-2 text-gray-500 dark:text-gray-400">A sign-up link will be sent from a 'no-reply' Firebase email.</p>
-                        </div>
-                        <h2 class="text-2xl font-semibold mb-4">Manage Users</h2>
-                        <div id="users-list" class="bg-card p-4 rounded-lg border border-theme"></div>
-                    </div>
-                     <div id="role-descriptions-sub-section" class="sub-section">
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            <div class="bg-card p-6 rounded-lg border border-theme">
-                                <h3 class="text-xl font-bold primary-text mb-2">Admin</h3>
-                                <p>Full control. Can manage users, finances, players, and all settings.</p>
-                            </div>
-                            <div class="bg-card p-6 rounded-lg border border-theme">
-                                <h3 class="text-xl font-bold primary-text mb-2">President</h3>
-                                <p>High-level oversight. Approves requisitions and transactions. Can view all data but cannot manage users.</p>
-                            </div>
-                             <div class="bg-card p-6 rounded-lg border border-theme">
-                                <h3 class="text-xl font-bold primary-text mb-2">Captain</h3>
-                                <p>Manages the team roster. Exclusive access to the Player Management page.</p>
-                            </div>
-                            <div class="bg-card p-6 rounded-lg border border-theme">
-                                <h3 class="text-xl font-bold primary-text mb-2">Secretary</h3>
-                                <p>Receives notifications for new requisitions to maintain records.</p>
-                            </div>
-                            <div class="bg-card p-6 rounded-lg border border-theme">
-                                <h3 class="text-xl font-bold primary-text mb-2">Treasurer</h3>
-                                <p>Manages all finances, issues receipts, sets prices, and can input player allowances.</p>
-                            </div>
-                            <div class="bg-card p-6 rounded-lg border border-theme">
-                                <h3 class="text-xl font-bold primary-text mb-2">Treasury Staff</h3>
-                                <p>Assists the treasurer with financial entries and jersey orders.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="social-media-content" class="content-section">
-                    <h2 class="text-2xl font-semibold mb-4">Record Social Media Engagements for <span id="current-month-year"></span></h2>
-                    <div class="bg-card p-6 rounded-lg border border-theme">
-                        <form id="social-media-form">
-                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                 <div class="flex items-center gap-3">
-                                    <i class="fab fa-twitter text-2xl w-6 text-center"></i>
-                                    <div>
-                                        <label for="engagement-x" class="font-semibold">X / Twitter Engagements</label>
-                                        <input id="engagement-x" type="number" class="w-full p-2 bg-input rounded disabled:bg-gray-800 disabled:cursor-not-allowed" required min="0" step="1" placeholder="e.g., 1500" disabled>
-                                    </div>
-                                 </div>
-                                 <div class="flex items-center gap-3">
-                                    <i class="fab fa-instagram text-2xl w-6 text-center"></i>
-                                    <div>
-                                        <label for="engagement-ig-main" class="font-semibold">Instagram Main Engagements</label>
-                                        <input id="engagement-ig-main" type="number" class="w-full p-2 bg-input rounded disabled:bg-gray-800 disabled:cursor-not-allowed" required min="0" step="1" placeholder="e.g., 5500" disabled>
-                                    </div>
-                                 </div>
-                                 <div class="flex items-center gap-3">
-                                     <i class="fab fa-instagram-square text-2xl w-6 text-center"></i>
-                                     <div>
-                                        <label for="engagement-ig-fan" class="font-semibold">Instagram Fan Engagements</label>
-                                        <input id="engagement-ig-fan" type="number" class="w-full p-2 bg-input rounded disabled:bg-gray-800 disabled:cursor-not-allowed" required min="0" step="1" placeholder="e.g., 2300" disabled>
-                                     </div>
-                                 </div>
-                                 <div class="flex items-center gap-3">
-                                     <i class="fab fa-whatsapp text-2xl w-6 text-center"></i>
-                                     <div>
-                                        <label for="engagement-whatsapp" class="font-semibold">WhatsApp Engagements</label>
-                                        <input id="engagement-whatsapp" type="number" class="w-full p-2 bg-input rounded disabled:bg-gray-800 disabled:cursor-not-allowed" required min="0" step="1" placeholder="e.g., 800" disabled>
-                                     </div>
-                                 </div>
-                                 <div class="flex items-center gap-3">
-                                     <i class="fab fa-tiktok text-2xl w-6 text-center"></i>
-                                     <div>
-                                        <label for="engagement-tiktok" class="font-semibold">TikTok Engagements</label>
-                                        <input id="engagement-tiktok" type="number" class="w-full p-2 bg-input rounded disabled:bg-gray-800 disabled:cursor-not-allowed" required min="0" step="1" placeholder="e.g., 4200" disabled>
-                                     </div>
-                                 </div>
-                             </div>
-                              <button type="submit" class="mt-6 bg-primary text-black font-bold py-2 px-6 rounded-md hover-bg-primary-dark">Save Monthly Data</button>
-                        </form>
-                    </div>
-                </div>
-
-                <div id="jersey-orders-content" class="content-section">
-                     <nav class="flex space-x-4 border-b border-theme mb-6">
-                        <a href="#" data-sub-page="jersey-order-form-container" class="sub-nav-link py-2 px-1 font-medium active">New Order</a>
-                        <a href="#" data-sub-page="jersey-orders-list-container" class="sub-nav-link py-2 px-1 font-medium">Manage Orders</a>
-                        <a href="#" data-sub-page="jersey-pricing" class="sub-nav-link py-2 px-1 font-medium">Pricing</a>
-                    </nav>
-
-                    <div id="jersey-order-form-container-sub-section" class="sub-section active">
-                        <div class="bg-card p-6 rounded-lg mb-6 border border-theme">
-                            <h3 class="text-xl font-bold mb-4">Add New Jersey Order</h3>
-                            <form id="jersey-order-form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label>Customer Name</label>
-                                    <input id="customer-name" type="text" class="w-full p-2 bg-input rounded" required>
-                                </div>
-                                <div>
-                                    <label>Customer Email</label>
-                                    <input id="customer-email" type="email" class="w-full p-2 bg-input rounded" required>
-                                </div>
-                                <div>
-                                    <label>Phone Number</label>
-                                    <input id="customer-phone" type="tel" class="w-full p-2 bg-input rounded" required>
-                                </div>
-                                 <div>
-                                    <label>Jersey Type</label>
-                                    <select id="jersey-type" class="w-full p-2 bg-input rounded" required>
-                                        <option value="">Select a type...</option>
-                                        <!-- Options populated by JS --></select>
-                                </div>
-                                 <div>
-                                    <label>Jersey Size</label>
-                                    <select id="jersey-size" class="w-full p-2 bg-input rounded">
-                                        <option>Small</option>
-                                        <option>Medium</option>
-                                        <option>Large</option>
-                                        <option>XL</option>
-                                        <option>XXL</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label>Name on Shirt (Optional)</label>
-                                    <input id="shirt-name" type="text" class="w-full p-2 bg-input rounded" placeholder="e.g., OKELLO">
-                                </div>
-                                <div>
-                                     <label>Shirt Number (Optional)</label>
-                                    <input id="shirt-number" type="number" class="w-full p-2 bg-input rounded" min="0" max="99" placeholder="e.g., 10">
-                                </div>
-                                <div class="md:col-span-2">
-                                    <label>Delivery Location</label>
-                                    <input id="delivery-location" type="text" class="w-full p-2 bg-input rounded" required placeholder="e.g., Club House, Main Gate">
-                                </div>
-                                 <button type="submit" class="bg-primary text-black font-bold py-2 px-4 rounded-md hover-bg-primary-dark md:col-span-2">Place Order & Send Confirmation</button>
-                            </form>
-                        </div>
-                    </div>
-                    <div id="jersey-orders-list-container-sub-section" class="sub-section">
-                         <h2 class="text-2xl font-semibold mb-4">Manage Jersey Orders</h2>
-                        <div id="jersey-orders-list" class="bg-card p-4 rounded-lg border border-theme overflow-x-auto"></div>
-                    </div>
-                </div>
-
-                <div id="jersey-pricing-content" class="content-section">
-                    <div class="bg-card p-6 rounded-lg mb-6 border border-theme">
-                        <h3 class="text-xl font-bold mb-4">Add or Update Jersey Type</h3>
-                        <form id="jersey-pricing-form" class="flex flex-wrap items-end gap-4">
-                            <div>
-                                <label for="jersey-type-name">Jersey Type Name</label>
-                                <input id="jersey-type-name" type="text" placeholder="e.g., Home Kit 2025" class="w-full p-2 bg-input rounded" required>
-                            </div>
-                            <div>
-                                <label for="jersey-price-input">Price (UGX)</label>
-                                <input id="jersey-price-input" type="number" class="w-full p-2 bg-input rounded" required min="0">
-                            </div>
-                            <button type="submit" class="bg-primary text-black font-bold py-2 px-4 rounded-md hover-bg-primary-dark">Save / Update</button>
-                        </form>
-                         <p class="text-sm mt-2 text-gray-500 dark:text-gray-400">This will add a new jersey type or update the price of an existing one.</p>
-                    </div>
-
-                    <h2 class="text-2xl font-semibold mb-4">Current Jersey Prices</h2>
-                    <div id="jersey-types-list" class="bg-card p-4 rounded-lg border border-theme"></div>
-                </div>
-
-                <div id="player-registration-content" class="content-section">
-                    <div class="bg-card p-6 rounded-lg mb-6 border border-theme">
-                        <h3 class="text-xl font-bold mb-4">Register New Player</h3>
-                        <form id="player-registration-form">
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-                                <div>
-                                    <label>Player's Full Name</label>
-                                    <input id="player-name" type="text" class="w-full p-2 bg-input rounded" required>
-                                </div>
-                                <div>
-                                    <label>Date of Birth</label>
-                                    <input id="player-dob" type="date" class="w-full p-2 bg-input rounded" required>
-                                </div>
-                                <div>
-                                    <label>Nationality</label>
-                                    <input id="player-nationality" type="text" class="w-full p-2 bg-input rounded" required>
-                                </div>
-                                <div>
-                                    <label>Position</label>
-                                    <select id="player-position" class="w-full p-2 bg-input rounded">
-                                        <option>Goalkeeper</option>
-                                        <option>Defender</option>
-                                        <option>Midfielder</option>
-                                        <option>Forward</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label>Jersey Number</label>
-                                    <input id="player-jersey" type="number" class="w-full p-2 bg-input rounded" min="1" max="99" required>
-                                </div>
-                            </div>
-                            <button type="submit" class="mt-6 bg-primary text-black font-bold py-2 px-6 rounded-md hover-bg-primary-dark">Add Player</button>
-                        </form>
-                    </div>
-                    <h2 class="text-2xl font-semibold mb-4">Player Game Week & Allowance Tracker</h2>
-                    <div id="players-list" class="bg-card p-4 rounded-lg border border-theme overflow-x-auto"></div>
-                </div>
-
-            </div>
-        </div>
-    </main>
-
-    <!-- Firebase SDK --><script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { 
-            getAuth, 
-            onAuthStateChanged, 
-            signInWithEmailAndPassword,
-            createUserWithEmailAndPassword,
-            sendPasswordResetEmail,
-            signOut,
-            sendSignInLinkToEmail,
-            isSignInWithEmailLink,
-            signInWithEmailLink,
-            updatePassword
-        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-        import { 
-            getFirestore, 
-            collection, 
-            doc, 
-            addDoc,
-            setDoc, 
-            getDoc, 
-            getDocs,
-            updateDoc,
-            deleteDoc,
-            onSnapshot,
-            query,
-            orderBy,
-            Timestamp,
-            where,
-            runTransaction,
-            deleteField
-        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-        import { 
-            getStorage, 
-            ref, 
-            uploadBytes, 
-            getDownloadURL 
-        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
-
-        // --- PLACEHOLDERS & CONFIG ---
-        const providedFirebaseConfig = {
-           apiKey: "AIzaSyCX1fbImBBmjz1nbVuwgAwWoQJRhP_eqFs",
-           authDomain: "akachai-fc-records.firebaseapp.com",
-           projectId: "akachai-fc-records",
-           storageBucket: "akachai-fc-records.appspot.com",
-           messagingSenderId: "368803590661",
-           appId: "1:368803590661:web:ca7d0597f22e6bd40de26c"
+        // --- CONFIGURATION ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyDxgeiK-ecTRXNXggRtUw5tasPFOhQ18hE",
+            authDomain: "akachai-fc-portal.firebaseapp.com",
+            projectId: "akachai-fc-portal",
+            storageBucket: "akachai-fc-portal.appspot.com",
+            messagingSenderId: "499872026359",
+            appId: "1:499872026359:web:739df4855be6e30cab4df2",
+            measurementId: "G-RCTTPL83WJ"
         };
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : providedFirebaseConfig;
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'akachai-fc-portal';
+        
+        const emailJSConfig = {
+            serviceID: 'service_9nzfwtm',
+            publicKey: 'l3bB3ofE87AW5cFb2',
+            receiptTemplateID: 'template_efn8vlb',
+            orderTemplateID: 'template_qls35in'
+        };
 
-        // --- EMAILJS CONFIG: Your actual credentials ---
-        const EMAILJS_SERVICE_ID = "service_9nzfwtm";
-        const EMAILJS_RECEIPT_TEMPLATE_ID = "template_ouip1zp";
-        const EMAILJS_ORDER_TEMPLATE_ID = "template_olk3eeq";
-        const EMAILJS_PUBLIC_KEY = "l3bB3ofE87AW5cFb2";
-
+        // --- APPLICATION STATE ---
+        let state = {
+            currentUser: null,
+            userProfile: null, // Will hold { uid, email, role, name }
+            currentPage: 'dashboard',
+            loading: true,
+            // Firestore data collections
+            users: [],
+            finances: [],
+            requisitions: [],
+            orders: [],
+            merchandise: [],
+            players: [],
+            socialMedia: [],
+            settings: { seasonStartDate: '', seasonWeeks: 16 },
+            dashboardImages: []
+        };
+        
+        // --- DOM ELEMENTS ---
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const loginView = document.getElementById('login-view');
+        const appView = document.getElementById('app-view');
+        // ... other elements will be selected as needed
 
         // --- FIREBASE INITIALIZATION ---
-        let app, auth, db, storage;
+        let app, auth, db;
         try {
             app = initializeApp(firebaseConfig);
             auth = getAuth(app);
             db = getFirestore(app);
-            storage = getStorage(app);
-            emailjs.init(EMAILJS_PUBLIC_KEY);
-        } catch (error) {
-            console.error("Firebase initialization failed:", error);
-            document.body.innerHTML = `<div class="text-red-500 text-center p-8">Failed to initialize. Error: ${error.message}</div>`;
+            emailjs.init(emailJSConfig.publicKey);
+        } catch (error)
+{
+            console.error("Initialization failed:", error);
+            document.body.innerHTML = `<div class="p-4 bg-red-100 text-red-800">Application failed to initialize. Check console for errors.</div>`;
         }
 
-        // --- GLOBAL STATE & UI ELEMENTS ---
-        let currentUser = null;
-        let currentUserRole = 'user';
-        let engagementsChart = null;
-        let seasonProgressChart = null;
-        const loadingOverlay = document.getElementById('loading-overlay');
-        let inactivityTimer;
-        let jerseyPrices = {};
-        
-        // --- INACTIVITY LOGOUT ---
-        function resetInactivityTimer() {
-            clearTimeout(inactivityTimer);
-            inactivityTimer = setTimeout(() => {
-                if(auth.currentUser){
-                    showToast("You have been logged out due to inactivity.", true);
-                    signOut(auth);
-                }
-            }, 20 * 60 * 1000); // 20 minutes
-        }
-
-        // --- THEME LOGIC ---
+        // --- THEME MANAGEMENT ---
         const themeToggleBtn = document.getElementById('theme-toggle-btn');
-        const sunIcon = `<i class="fas fa-sun"></i>`;
-        const moonIcon = `<i class="fas fa-moon"></i>`;
+        const sunIcon = document.getElementById('theme-sun-icon');
+        const moonIcon = document.getElementById('theme-moon-icon');
+        const userTheme = localStorage.getItem('theme');
+        const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-        function applyTheme(theme) {
-            if (theme === 'dark') {
-                document.documentElement.classList.add('dark');
-                themeToggleBtn.innerHTML = sunIcon;
+        const applyTheme = (theme) => {
+            if (theme === 'light') {
+                document.documentElement.setAttribute('data-theme', 'light');
+                sunIcon.classList.remove('hidden');
+                moonIcon.classList.add('hidden');
             } else {
-                document.documentElement.classList.remove('dark');
-                themeToggleBtn.innerHTML = moonIcon;
-            }
-            if (engagementsChart && document.getElementById('dashboard-content').classList.contains('active')) {
-                loadDashboardData();
+                document.documentElement.removeAttribute('data-theme');
+                sunIcon.classList.add('hidden');
+                moonIcon.classList.remove('hidden');
             }
         };
 
         themeToggleBtn.addEventListener('click', () => {
-            const currentTheme = localStorage.getItem('theme') || 'dark';
+            const currentTheme = document.documentElement.hasAttribute('data-theme') ? 'light' : 'dark';
             const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
             localStorage.setItem('theme', newTheme);
             applyTheme(newTheme);
         });
-
-        const savedTheme = localStorage.getItem('theme') || 'dark';
-        applyTheme(savedTheme);
-
-
-        // --- SIDEBAR LOGIC ---
-        const sidebar = document.getElementById('sidebar');
-        const hamburgerBtn = document.getElementById('hamburger-btn');
-        const sidebarOverlay = document.getElementById('sidebar-overlay');
-        const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
-
-        hamburgerBtn.addEventListener('click', () => {
-            sidebar.classList.remove('-translate-x-full');
-            sidebarOverlay.classList.remove('hidden');
-        });
-
-        sidebarOverlay.addEventListener('click', () => {
-            sidebar.classList.add('-translate-x-full');
-            sidebarOverlay.classList.add('hidden');
-        });
         
-        sidebarToggleBtn.addEventListener('click', () => {
-            sidebar.classList.toggle('collapsed');
-            const isCollapsed = sidebar.classList.contains('collapsed');
-            localStorage.setItem('sidebarCollapsed', isCollapsed);
-            document.getElementById('main-content').style.transition = 'margin-left 0.3s';
-            document.getElementById('main-content').style.marginLeft = isCollapsed ? '5rem' : '16rem';
-            sidebarToggleBtn.querySelector('i').className = isCollapsed ? 'fas fa-chevron-right' : 'fas fa-chevron-left';
-        });
-
-        // Apply sidebar state on load
-        if (localStorage.getItem('sidebarCollapsed') === 'true') {
-            sidebar.classList.add('collapsed');
-            document.getElementById('main-content').style.marginLeft = '5rem';
-            sidebarToggleBtn.querySelector('i').className = 'fas fa-chevron-right';
+        // Apply saved theme on initial load
+        if (userTheme === 'light' || (!userTheme && !systemTheme)) {
+            applyTheme('light');
+        } else {
+            applyTheme('dark');
         }
 
 
-        // --- HELPER FUNCTIONS ---
-        function showLoader() { loadingOverlay.classList.remove('hidden'); }
-        function hideLoader() { loadingOverlay.classList.add('hidden'); }
-
-        function showToast(message, isError = false) {
-            const toast = document.createElement('div');
-            toast.textContent = message;
-            toast.className = `fixed bottom-5 right-5 p-4 rounded-lg text-white ${isError ? 'bg-red-500' : 'bg-green-500'}`;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
-        };
-
-        function showPage(pageId, subPageId) {
-            document.querySelectorAll('.content-section').forEach(section => section.classList.remove('active'));
-            const activePage = document.getElementById(pageId);
-            if (activePage) {
-                activePage.classList.add('active');
-                const title = pageId.replace('-content', '').replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-                document.getElementById('page-title').textContent = title;
-
-                // Handle sub-pages
-                const subNavContainer = activePage.querySelector('nav');
-                if (subNavContainer) {
-                    const targetSubPageId = subPageId || subNavContainer.querySelector('.sub-nav-link').dataset.subPage;
-                    activePage.querySelectorAll('.sub-section').forEach(sub => sub.classList.remove('active'));
-                    activePage.querySelectorAll('.sub-nav-link').forEach(link => link.classList.remove('active'));
-                    
-                    const activeSubPage = document.getElementById(`${targetSubPageId}-sub-section`);
-                    if(activeSubPage) activeSubPage.classList.add('active');
-                    
-                    const activeSubNavLink = subNavContainer.querySelector(`[data-sub-page="${targetSubPageId}"]`);
-                    if(activeSubNavLink) activeSubNavLink.classList.add('active');
+        // --- AUTHENTICATION ---
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                if (!state.userProfile || state.userProfile.uid !== user.uid) {
+                    await fetchUserProfile(user.uid);
+                    setupFirestoreListeners();
                 }
+                state.currentUser = user;
+                showView('app');
             } else {
-                showPage('dashboard-content');
+                state.currentUser = null;
+                state.userProfile = null;
+                unsubscribeAllListeners();
+                showView('login');
             }
-            if (pageId === 'social-media-content') {
-                loadSocialMediaFormData();
-            }
-            // Close sidebar on mobile after navigation
-            if (window.innerWidth < 768) {
-                sidebar.classList.add('-translate-x-full');
-                sidebarOverlay.classList.add('hidden');
-            }
-        };
+            updateLoading(false);
+        });
 
-        function formatCurrency(amount) {
-            return new Intl.NumberFormat('en-UG', { style: 'currency', currency: 'UGX' }).format(amount);
-        };
-        
-        // --- AUTHENTICATION FLOW ---
-        const authContainer = document.getElementById('auth-container');
-        const authError = document.getElementById('auth-error');
-        const authTitle = document.getElementById('auth-title');
-
-        function renderLoginForm() {
-            authTitle.textContent = 'AKACHAI ADMIN PORTAL';
-            authContainer.innerHTML = `
-                <form id="login-form">
-                    <div class="mb-4">
-                        <label for="login-email" class="block text-sm font-medium mb-2">Email</label>
-                        <input type="email" id="login-email" class="w-full p-3 bg-input rounded-md border border-theme" required>
-                    </div>
-                    <div class="mb-4 relative">
-                        <label for="login-password" class="block text-sm font-medium mb-2">Password</label>
-                        <input type="password" id="login-password" class="w-full p-3 bg-input rounded-md border border-theme pr-10" required>
-                        <span id="login-toggle-password" class="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer text-gray-400" style="top: 1.875rem;"><i class="fas fa-eye"></i></span>
-                    </div>
-                    <div class="text-right mb-6">
-                        <a href="#" id="forgot-password-link" class="text-sm text-yellow-400 hover:underline">Forgot Password?</a>
-                    </div>
-                    <button type="submit" class="w-full bg-primary text-black font-bold py-3 rounded-md hover-bg-primary-dark">Login</button>
-                </form>
-            `;
-        }
-        
-        function renderCompleteSignupForm(email) {
-             authTitle.textContent = 'Complete Your Account';
-             authContainer.innerHTML = `
-                <p class="text-center mb-4">Welcome! Please create a password for <strong>${email}</strong>.</p>
-                <form id="complete-signup-form">
-                    <div class="mb-4 relative">
-                        <label for="signup-password" class="block text-sm font-medium mb-2">Choose a Password</label>
-                        <input type="password" id="signup-password" class="w-full p-3 bg-input rounded-md border border-theme" required>
-                    </div>
-                    <button type="submit" class="w-full bg-primary text-black font-bold py-3 rounded-md hover-bg-primary-dark">Complete Sign-Up</button>
-                </form>
-            `;
-        }
-
-
-        async function handleAuthFlow() {
-            authError.textContent = '';
-            if (isSignInWithEmailLink(auth, window.location.href)) {
-                let email = window.localStorage.getItem('emailForSignIn');
-                if (!email) {
-                    email = window.prompt('Please provide your email for confirmation');
-                }
-                if (email) {
-                    try {
-                        showLoader();
-                        await signInWithEmailLink(auth, email, window.location.href);
-                        window.localStorage.removeItem('emailForSignIn');
-                        // The onAuthStateChanged listener will now handle everything.
-                    } catch (error) {
-                        authError.textContent = error.message;
-                        renderLoginForm();
-                    } finally {
-                        hideLoader();
-                    }
-                }
-            } else {
-                renderLoginForm();
-            }
-        }
-        
-        authContainer.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const formId = e.target.id;
-            authError.textContent = '';
-            showLoader();
-
+        async function fetchUserProfile(uid) {
             try {
-                if (formId === 'login-form') {
-                    const email = document.getElementById('login-email').value;
-                    const password = document.getElementById('login-password').value;
-                    await signInWithEmailAndPassword(auth, email, password);
-                } else if (formId === 'complete-signup-form') {
-                    const password = document.getElementById('signup-password').value;
-                    if (auth.currentUser) {
-                        await updatePassword(auth.currentUser, password);
-                        showToast("Password set successfully! Welcome.");
-                         // onAuthStateChanged will re-evaluate and load the app.
-                    } else {
-                        throw new Error("No active user session to update.");
-                    }
+                const userDocRef = doc(db, 'users', uid);
+                const userDocSnap = await getDoc(userDocRef);
+                if (userDocSnap.exists()) {
+                    state.userProfile = { uid, ...userDocSnap.data() };
+                } else {
+                    console.warn("User profile not found in Firestore for UID:", uid);
+                    // This could be a new user, or an error. For now, sign out.
+                    await signOut(auth);
                 }
             } catch (error) {
-                 authError.textContent = error.message;
-            } finally {
-                hideLoader();
+                console.error("Error fetching user profile:", error);
+                await signOut(auth);
             }
-        });
+        }
         
-        authContainer.addEventListener('click', e => {
-            if (e.target.id === 'forgot-password-link') {
-                e.preventDefault();
-                const email = prompt("Please enter your email to receive a password reset link:");
-                if (email) {
-                    showLoader();
-                    sendPasswordResetEmail(auth, email)
-                        .then(() => showToast("Password reset link sent! Check your inbox."))
-                        .catch(error => authError.textContent = error.message)
-                        .finally(hideLoader);
-                }
-            }
-             if (e.target.id === 'login-toggle-password' || e.target.parentElement.id === 'login-toggle-password') {
-                const passwordInput = document.getElementById('login-password');
-                const icon = document.getElementById('login-toggle-password').querySelector('i');
-                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-                passwordInput.setAttribute('type', type);
-                icon.classList.toggle('fa-eye');
-                icon.classList.toggle('fa-eye-slash');
+        const loginForm = document.getElementById('login-form');
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            updateLoading(true);
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const loginError = document.getElementById('login-error');
+            
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                loginError.classList.add('hidden');
+            } catch (error) {
+                loginError.textContent = "Invalid email or password.";
+                loginError.classList.remove('hidden');
+                console.error("Login failed:", error.message);
+                updateLoading(false);
             }
         });
 
-        // --- ON PAGE LOAD ---
-        handleAuthFlow();
-        onAuthStateChanged(auth, async (user) => {
-            const authSection = document.getElementById('auth-section');
-            const appSection = document.getElementById('app-section');
+        const togglePasswordBtn = document.getElementById('toggle-password-visibility');
+        const passwordInput = document.getElementById('password');
 
-            if (user) {
-                // Check if user has a password. If not, they just came from an email link and need to set one.
-                const hasPassword = user.providerData.some(provider => provider.providerId === 'password');
-                if (!hasPassword) {
-                    renderCompleteSignupForm(user.email);
-                    authSection.classList.remove('hidden');
-                    appSection.classList.add('hidden');
-                    return;
-                }
-
-                document.addEventListener('mousemove', resetInactivityTimer);
-                document.addEventListener('keydown', resetInactivityTimer);
-                document.addEventListener('click', resetInactivityTimer);
-                resetInactivityTimer();
-
-                try {
-                    let userDocRef = doc(db, `apps/${appId}/users`, user.uid);
-                    let userDoc = await getDoc(userDocRef);
-
-                    if (!userDoc.exists()) {
-                        const invitedUserRef = doc(db, `apps/${appId}/invited_users`, user.email);
-                        const invitedUserDoc = await getDoc(invitedUserRef);
-                        
-                        if (invitedUserDoc.exists()) {
-                            const invitedData = invitedUserDoc.data();
-                            await setDoc(userDocRef, {
-                                name: invitedData.name,
-                                email: user.email,
-                                role: invitedData.role,
-                                createdAt: Timestamp.now()
-                            });
-                            await deleteDoc(invitedUserRef);
-                            userDoc = await getDoc(userDocRef);
-                        } else {
-                            throw new Error("This email has not been invited. Please contact an admin.");
-                        }
-                    }
-
-                    currentUser = { uid: user.uid, email: user.email, ...userDoc.data() };
-                    currentUserRole = currentUser.role || 'user';
-                    await setupUIForUser();
-                    authSection.classList.add('hidden');
-                    appSection.classList.remove('hidden');
-
-                } catch (error) {
-                     console.error("Auth state change error:", error);
-                     showToast(error.message, true);
-                     await signOut(auth);
-                }
-            } else {
-                clearTimeout(inactivityTimer);
-                document.removeEventListener('mousemove', resetInactivityTimer);
-                document.removeEventListener('keydown', resetInactivityTimer);
-                document.removeEventListener('click', resetInactivityTimer);
-
-                currentUser = null;
-                currentUserRole = 'user';
-                authSection.classList.remove('hidden');
-                appSection.classList.add('hidden');
-                handleAuthFlow(); // Show correct auth form on logout
-            }
+        togglePasswordBtn.addEventListener('click', () => {
+            const isPassword = passwordInput.type === 'password';
+            passwordInput.type = isPassword ? 'text' : 'password';
+            
+            togglePasswordBtn.querySelector('[data-lucide="eye"]').classList.toggle('hidden', isPassword);
+            togglePasswordBtn.querySelector('[data-lucide="eye-off"]').classList.toggle('hidden', !isPassword);
         });
 
+        document.getElementById('logout-btn').addEventListener('click', async () => {
+            await signOut(auth);
+        });
 
-        // --- UI SETUP & DATA LOADING ---
-        async function setupUIForUser() {
-            document.getElementById('user-name-display').textContent = currentUser.name;
-            document.getElementById('user-role-display').textContent = currentUserRole.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-            const nav = document.getElementById('main-nav');
-            let navLinks = `
-                <a href="#" data-page="dashboard-content" class="nav-link flex items-center gap-4 py-2 px-4 rounded hover:bg-gray-700"><i class="fas fa-tachometer-alt w-6 text-center"></i><span class="nav-text">Dashboard</span></a>
-                <a href="#" data-page="requisitions-content" class="nav-link flex items-center gap-4 py-2 px-4 rounded hover:bg-gray-700"><i class="fas fa-file-invoice w-6 text-center"></i><span class="nav-text">Requisitions</span></a>
-                <a href="#" data-page="chat-content" class="nav-link flex items-center gap-4 py-2 px-4 rounded hover:bg-gray-700"><i class="fas fa-comments w-6 text-center"></i><span class="nav-text">Chat Room</span></a>
-            `;
-
-            if (currentUserRole === 'captain') {
-                 navLinks += `<a href="#" data-page="player-registration-content" class="nav-link flex items-center gap-4 py-2 px-4 rounded hover:bg-gray-700"><i class="fas fa-user-plus w-6 text-center"></i><span class="nav-text">Player Management</span></a>`;
-            }
-
-            if (['admin', 'treasurer', 'treasury_staff', 'president'].includes(currentUserRole)) {
-                navLinks += `
-                    <a href="#" data-page="finances-content" class="nav-link flex items-center gap-4 py-2 px-4 rounded hover:bg-gray-700"><i class="fas fa-coins w-6 text-center"></i><span class="nav-text">Finances</span></a>
-                    <a href="#" data-page="jersey-orders-content" class="nav-link flex items-center gap-4 py-2 px-4 rounded hover:bg-gray-700"><i class="fas fa-tshirt w-6 text-center"></i><span class="nav-text">Jersey Orders</span></a>
-                `;
-            }
-            
-            const isSocialMediaManager = currentUserRole.startsWith('social_media');
-            if (['admin', 'president'].includes(currentUserRole) || isSocialMediaManager) {
-                navLinks += `<a href="#" data-page="social-media-content" class="nav-link flex items-center gap-4 py-2 px-4 rounded hover:bg-gray-700"><i class="fas fa-chart-line w-6 text-center"></i><span class="nav-text">Social Stats</span></a>`;
-            }
-
-            // Admin-only link at the end
-             if (currentUserRole === 'admin') {
-                navLinks += `<a href="#" data-page="user-management-content" class="nav-link flex items-center gap-4 py-2 px-4 rounded hover:bg-gray-700"><i class="fas fa-users-cog w-6 text-center"></i><span class="nav-text">User Management</span></a>`;
-            }
-
-            // Show admin alerts for both admin and president
-             if (['admin', 'president'].includes(currentUserRole)) {
-                document.getElementById('admin-alerts-section').style.display = 'block';
-            } else {
-                document.getElementById('admin-alerts-section').style.display = 'none';
-            }
-            
-            nav.innerHTML = navLinks;
-
-            document.querySelectorAll('.nav-link').forEach(link => {
-                link.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    showPage(e.currentTarget.dataset.page);
-                    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('bg-primary', 'text-black', 'dark:text-black'));
-                    e.currentTarget.classList.add('bg-primary', 'text-black', 'dark:text-black');
-                });
-            });
-            const activeLink = document.querySelector('.nav-link[data-page="dashboard-content"]');
-            if(activeLink) activeLink.classList.add('bg-primary', 'text-black', 'dark:text-black');
-
-            // Initialize all data listeners
-            listenForJerseyTypes();
-            loadDashboardData();
-            listenForRequisitions();
-            listenForChatMessages();
-            listenForNotifications();
-
-            if (['admin', 'treasurer', 'treasury_staff', 'president'].includes(currentUserRole)) {
-                listenForTransactions();
-                listenForPendingTransactions();
-                listenForJerseyOrders();
-                listenForReceipts();
-            }
-
-            if(currentUserRole === 'captain'){
-                listenForRegisteredPlayers();
-            }
-
-            if (currentUserRole === 'admin') {
-                listenForUsers();
-            }
-            bindStaticEvents();
-            setupSocialMediaPermissions();
+        // --- ROLE-BASED ACCESS CONTROL (RBAC) ---
+        function hasPermission(requiredRoles) {
+            if (!state.userProfile || !state.userProfile.role) return false;
+            return requiredRoles.includes(state.userProfile.role);
         }
 
-        // --- DASHBOARD ---
-        function loadDashboardData() { /* Full function code is here */ };
-        
-        document.getElementById('send-alert-btn').addEventListener('click', async () => { /* Full function code is here */ });
+        // --- UI & RENDERING ---
+        function updateLoading(isLoading) {
+            state.loading = isLoading;
+            loadingSpinner.style.display = isLoading ? 'flex' : 'none';
+        }
 
-        // --- EVENT BINDING ---
-        function bindStaticEvents() { /* Full function code is here */ }
+        function showView(viewName) {
+            loginView.style.display = 'none';
+            appView.style.display = 'none';
+            if (viewName === 'login') {
+                loginView.style.display = 'flex';
+            } else if (viewName === 'app') {
+                appView.style.display = 'flex';
+                renderApp();
+            }
+        }
+        
+        // This is the main render function, called when state changes
+        function renderApp() {
+            if (!state.userProfile) return;
+            renderSidebar();
+            renderHeader();
+            renderCurrentPage();
+        }
 
-        // --- MODULE LOGIC ---
-        
-        function handleRequisitionSubmit(e) { /* Full function code is here */ }
-        function listenForRequisitions() { /* Full function code is here */ }
-        
-        async function createAutomatedTransaction(description, amount, type) { /* Full function code is here */ }
-        async function handleTransactionSubmit(e) { /* Full function code is here */ }
-        function listenForTransactions() { /* Full function code is here */ }
-        function listenForPendingTransactions() { /* Full function code is here */ }
-        
-        async function getNextReceiptNumber() { /* Full function code is here */ }
-        async function handleReceiptSubmit(e) { /* Full function code is here */ }
-        function listenForReceipts() { /* Full function code is here */ }
-        
-        async function handleChatSubmit(e) { /* Full function code is here */ }
-        function listenForChatMessages() { /* Full function code is here */ }
-        
-        function listenForUsers() { /* Full function code is here */ }
-        
-        function setupSocialMediaPermissions() { /* Full function code is here */ }
-        async function handleSocialMediaSubmit(e) { /* Full function code is here */ }
-        function loadSocialMediaFormData() { /* Full function code is here */ }
-        
-        async function getNextOrderNumber() { /* Full function code is here */ }
-        async function handleJerseyOrderSubmit(e) { /* Full function code is here */ }
-        function listenForJerseyOrders() { /* Full function code is here */ }
-        
-        // JERSEY PRICING
-        async function handleJerseyTypeSubmit(e) { /* Full function code is here */ }
-        function listenForJerseyTypes() { /* Full function code is here */ }
+        function renderSidebar() {
+            const nav = document.getElementById('sidebar-nav');
+            const role = state.userProfile.role;
+            let navLinks = [
+                { id: 'dashboard', icon: 'layout-dashboard', text: 'Dashboard', roles: ['Admin', 'President', 'Treasurer', 'Vice President', 'Captain', 'Social Media Manager', 'Graphics Designer', 'Order Handler'] },
+                { id: 'finances', icon: 'trending-up', text: 'Finances', roles: ['Admin', 'President', 'Treasurer'] },
+                { id: 'requisitions', icon: 'clipboard-list', text: 'Requisitions', roles: ['Admin', 'President', 'Treasurer', 'Vice President', 'Captain', 'Social Media Manager', 'Graphics Designer', 'Order Handler'] },
+                { id: 'orders', icon: 'shopping-cart', text: 'Orders', roles: ['Admin', 'President', 'Vice President', 'Captain', 'Social Media Manager', 'Graphics Designer', 'Order Handler'] },
+                { id: 'player_roster', icon: 'users', text: 'Player Roster', roles: ['Admin', 'President', 'Captain', 'Vice President'] },
+                { id: 'social_media', icon: 'share-2', text: 'Social Media', roles: ['Admin', 'President', 'Social Media Manager'] },
+                { id: 'administration', icon: 'sliders-horizontal', text: 'Administration', roles: ['Admin', 'President'] }
+            ];
 
-        // PLAYER REGISTRATION (REVISED)
-        async function getNextPlayerId() { /* Full function code is here */ }
-        async function handlePlayerRegistrationSubmit(e) { /* Full function code is here */ }
-        function listenForRegisteredPlayers() { /* Full function code is here */ }
+            let html = '';
+            navLinks.forEach(link => {
+                if (link.roles.includes(role)) {
+                    const isActive = state.currentPage === link.id ? 'active' : '';
+                    const linkTextColor = document.documentElement.hasAttribute('data-theme') ? 'text-slate-700' : 'text-slate-300';
+                    html += `
+                        <a href="#${link.id}" class="sidebar-link ${isActive} flex items-center py-3 px-4 rounded-md ${linkTextColor} hover:bg-slate-700 hover:text-white transition-colors mx-2 my-1">
+                            <i data-lucide="${link.icon}" class="h-5 w-5 mr-3"></i> ${link.text}
+                        </a>`;
+                }
+            });
+            // This is a simplified way to render. A more robust app would use a library or more complex diffing.
+            const currentHTML = nav.innerHTML.split('<div class="mt-auto')[0]; // only compare links
+            if (currentHTML !== html) {
+                 nav.innerHTML = html + nav.innerHTML.substring(nav.innerHTML.indexOf('<div class="mt-auto'));
+            }
+            lucide.createIcons();
+        }
+        
+        function renderHeader() {
+            document.getElementById('page-title').textContent = state.currentPage.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+            const userDisplay = document.getElementById('current-user-display');
+            userDisplay.querySelector('p:first-child').textContent = state.userProfile.name || 'No Name';
+            userDisplay.querySelector('p:last-child').textContent = state.userProfile.role;
+        }
+        
+        function renderCurrentPage() {
+            document.querySelectorAll('.page-content').forEach(p => p.classList.add('hidden'));
+            const currentPageElement = document.getElementById(`${state.currentPage}-page`);
+            if (currentPageElement) {
+                currentPageElement.classList.remove('hidden');
+                // Call the specific render function for the active page
+                const renderFunctionName = `render${state.currentPage.charAt(0).toUpperCase() + state.currentPage.slice(1).replace(/_(\w)/g, (match, p1) => p1.toUpperCase())}`;
+                if (window[renderFunctionName] && typeof window[renderFunctionName] === 'function') {
+                    window[renderFunctionName](currentPageElement);
+                } else {
+                    currentPageElement.innerHTML = `<h2 class="text-2xl">Welcome to the ${state.currentPage} page.</h2><p>Content coming soon.</p>`;
+                }
+            } else {
+                 document.getElementById('dashboard-page').classList.remove('hidden');
+                 renderDashboard(document.getElementById('dashboard-page'));
+            }
+        }
+        
+        // --- PAGE-SPECIFIC RENDER FUNCTIONS ---
+        // We will define these globally so they can be called by renderCurrentPage
+        window.renderDashboard = (container) => {
+            // Placeholder for charts and widgets
+            container.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-secondary p-6 rounded-lg shadow border border-themed"><h3 class="font-semibold text-primary">Total Inflow</h3><p class="text-2xl font-bold text-green-500">--</p></div>
+                    <div class="bg-secondary p-6 rounded-lg shadow border border-themed"><h3 class="font-semibold text-primary">Total Outflow</h3><p class="text-2xl font-bold text-red-500">--</p></div>
+                    <div class="bg-secondary p-6 rounded-lg shadow border border-themed"><h3 class="font-semibold text-primary">Season Progress</h3><p class="text-2xl font-bold text-primary">--</p></div>
+                    <div class="bg-secondary p-6 rounded-lg shadow border border-themed"><h3 class="font-semibold text-primary">Pending Requisitions</h3><p class="text-2xl font-bold text-primary">--</p></div>
+                </div>
+                <div class="mt-8 grid grid-cols-1 lg:grid-cols-5 gap-6">
+                    <div class="lg:col-span-3 bg-secondary p-6 rounded-lg shadow border border-themed">
+                        <h3 class="text-lg font-semibold mb-4 text-primary">Social Media Engagement</h3>
+                        <canvas id="socialMediaChart"></canvas>
+                    </div>
+                    <div class="lg:col-span-2 bg-secondary p-6 rounded-lg shadow border border-themed">
+                         <h3 class="text-lg font-semibold mb-4 text-primary">Upcoming Events / Photos</h3>
+                         <!-- Photo uploader for Graphics Designer -->
+                    </div>
+                </div>
+            `;
+            // Chart.js rendering logic would go here
+        };
 
-        // REPORTING
-        async function handleGenerateReport(e) { /* Full function code is here */ }
+        window.renderFinances = (container) => {
+             container.innerHTML = `
+                <div class="bg-secondary p-6 rounded-lg shadow border border-themed">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold text-primary">Financial Transactions</h2>
+                        <button class="bg-accent text-white px-4 py-2 rounded-lg bg-accent-hover">Add Transaction</button>
+                    </div>
+                    <!-- Transaction table will be rendered here -->
+                </div>
+            `;
+        }
+        
+        // ... Other page renderers would follow a similar pattern ...
 
 
-        // NOTIFICATIONS
-        async function createNotification(message, roles) { /* Full function code is here */ }
-        function listenForNotifications() { /* Full function code is here */ }
+        // --- FIRESTORE LISTENERS ---
+        let unsubscribers = [];
 
-        window.jsPDF = window.jspdf.jsPDF; // Make jsPDF available globally for the plugin
+        function setupFirestoreListeners() {
+            unsubscribeAllListeners();
+            
+            const collectionsToListen = [
+                'users', 'finances', 'requisitions', 'orders', 'merchandise', 
+                'players', 'socialMedia', 'dashboardImages'
+            ];
+            
+            collectionsToListen.forEach(collectionName => {
+                const unsub = onSnapshot(collection(db, collectionName), (snapshot) => {
+                    state[collectionName] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    renderApp(); // Re-render on data change
+                }, (error) => console.error(`Error fetching ${collectionName}:`, error));
+                unsubscribers.push(unsub);
+            });
 
+            // Listener for single document (settings)
+            const unsubSettings = onSnapshot(doc(db, 'settings', 'main'), (doc) => {
+                if (doc.exists()) {
+                    state.settings = doc.data();
+                }
+                renderApp();
+            }, (error) => console.error("Error fetching settings:", error));
+            unsubscribers.push(unsubSettings);
+        }
+
+        function unsubscribeAllListeners() {
+            unsubscribers.forEach(unsub => unsub());
+            unsubscribers = [];
+        }
+
+        // --- ROUTING ---
+        function handleRouteChange() {
+            const hash = window.location.hash.substring(1) || 'dashboard';
+            state.currentPage = hash;
+            renderApp();
+        }
+        
+        window.addEventListener('hashchange', handleRouteChange);
+        window.addEventListener('load', handleRouteChange);
+        
+        // --- EVENT DELEGATION FOR DYNAMIC CONTENT ---
+        document.body.addEventListener('click', (e) => {
+            const action = e.target.closest('[data-action]');
+            if (!action) return;
+
+            // Example of handling actions
+            if (action.dataset.action === 'open-add-transaction-modal') {
+                // open a modal
+            }
+        });
+
+        // --- UTILITY FUNCTIONS ---
+        // Sidebar toggle for mobile
+        document.getElementById('open-sidebar-btn').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.remove('-translate-x-full');
+        });
+        document.body.addEventListener('click', (e) => {
+            const sidebar = document.getElementById('sidebar');
+            const navContainer = document.querySelector('nav');
+            // If click is outside sidebar and not on the toggle button, close it
+            if (!sidebar.contains(e.target) && !e.target.closest('#open-sidebar-btn')) {
+                 sidebar.classList.add('-translate-x-full');
+            }
+             // Also close on nav link click for mobile
+            if (navContainer.contains(e.target) && window.innerWidth < 1024) {
+                 sidebar.classList.add('-translate-x-full');
+            }
+        });
+
+        // Initialize Lucide icons on load
+        lucide.createIcons();
     </script>
+</body>
+</html>
 
-</body></html>
 
