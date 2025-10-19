@@ -428,7 +428,6 @@
                      <nav class="flex space-x-4 border-b border-theme mb-6">
                         <a href="#" data-sub-page="jersey-order-form-container" class="sub-nav-link py-2 px-1 font-medium active">New Order</a>
                         <a href="#" data-sub-page="jersey-orders-list-container" class="sub-nav-link py-2 px-1 font-medium">Manage Orders</a>
-                        <a href="#" data-sub-page="jersey-pricing" class="sub-nav-link py-2 px-1 font-medium">Pricing</a>
                     </nav>
 
                     <div id="jersey-order-form-container-sub-section" class="sub-section active">
@@ -483,26 +482,27 @@
                          <h2 class="text-2xl font-semibold mb-4">Manage Jersey Orders</h2>
                         <div id="jersey-orders-list" class="bg-card p-4 rounded-lg border border-theme overflow-x-auto"></div>
                     </div>
-                    <div id="jersey-pricing-sub-section" class="sub-section">
-                        <div class="bg-card p-6 rounded-lg mb-6 border border-theme">
-                            <h3 class="text-xl font-bold mb-4">Add or Update Jersey Type</h3>
-                            <form id="jersey-pricing-form" class="flex flex-wrap items-end gap-4">
-                                <div>
-                                    <label for="jersey-type-name">Jersey Type Name</label>
-                                    <input id="jersey-type-name" type="text" placeholder="e.g., Home Kit 2025" class="w-full p-2 bg-input rounded" required>
-                                </div>
-                                <div>
-                                    <label for="jersey-price-input">Price (UGX)</label>
-                                    <input id="jersey-price-input" type="number" class="w-full p-2 bg-input rounded" required min="0">
-                                </div>
-                                <button type="submit" class="bg-primary text-black font-bold py-2 px-4 rounded-md hover-bg-primary-dark">Save / Update</button>
-                            </form>
-                             <p class="text-sm mt-2 text-gray-500 dark:text-gray-400">This will add a new jersey type or update the price of an existing one.</p>
-                        </div>
+                </div>
 
-                        <h2 class="text-2xl font-semibold mb-4">Current Jersey Prices</h2>
-                        <div id="jersey-types-list" class="bg-card p-4 rounded-lg border border-theme"></div>
+                <div id="jersey-pricing-content" class="content-section">
+                    <div class="bg-card p-6 rounded-lg mb-6 border border-theme">
+                        <h3 class="text-xl font-bold mb-4">Add or Update Jersey Type</h3>
+                        <form id="jersey-pricing-form" class="flex flex-wrap items-end gap-4">
+                            <div>
+                                <label for="jersey-type-name">Jersey Type Name</label>
+                                <input id="jersey-type-name" type="text" placeholder="e.g., Home Kit 2025" class="w-full p-2 bg-input rounded" required>
+                            </div>
+                            <div>
+                                <label for="jersey-price-input">Price (UGX)</label>
+                                <input id="jersey-price-input" type="number" class="w-full p-2 bg-input rounded" required min="0">
+                            </div>
+                            <button type="submit" class="bg-primary text-black font-bold py-2 px-4 rounded-md hover-bg-primary-dark">Save / Update</button>
+                        </form>
+                         <p class="text-sm mt-2 text-gray-500 dark:text-gray-400">This will add a new jersey type or update the price of an existing one.</p>
                     </div>
+
+                    <h2 class="text-2xl font-semibold mb-4">Current Jersey Prices</h2>
+                    <div id="jersey-types-list" class="bg-card p-4 rounded-lg border border-theme"></div>
                 </div>
 
                 <div id="player-registration-content" class="content-section">
@@ -942,10 +942,6 @@
                     <a href="#" data-page="finances-content" class="nav-link flex items-center gap-4 py-2 px-4 rounded hover:bg-gray-700"><i class="fas fa-coins w-6 text-center"></i><span class="nav-text">Finances</span></a>
                     <a href="#" data-page="jersey-orders-content" class="nav-link flex items-center gap-4 py-2 px-4 rounded hover:bg-gray-700"><i class="fas fa-tshirt w-6 text-center"></i><span class="nav-text">Jersey Orders</span></a>
                 `;
-            }
-
-             if (['admin', 'treasurer'].includes(currentUserRole)) {
-                navLinks += `<a href="#" data-page="jersey-pricing-content" class="nav-link flex items-center gap-4 py-2 px-4 rounded hover:bg-gray-700"><i class="fas fa-dollar-sign w-6 text-center"></i><span class="nav-text">Jersey Pricing</span></a>`;
             }
             
             const isSocialMediaManager = currentUserRole.startsWith('social_media');
