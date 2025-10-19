@@ -77,17 +77,20 @@
 
         .sidebar-link.active {
             background-color: var(--accent);
-            color: white; /* High contrast for both themes */
+            color: white !important; /* High contrast for both themes */
         }
-        [data-theme="light"] .sidebar-link.active {
-            color: white;
-        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-primary); }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
     </style>
 </head>
 <body class="antialiased">
 
     <!-- Loading Spinner -->
-    <div id="loading-spinner" class="fixed inset-0 bg-secondary bg-opacity-75 flex items-center justify-center z-50">
+    <div id="loading-spinner" class="fixed inset-0 bg-secondary bg-opacity-75 flex items-center justify-center z-[100]">
         <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-[var(--accent)]"></div>
     </div>
 
@@ -138,7 +141,7 @@
                     <span class="text-xl font-bold text-primary">Akachai FC</span>
                 </a>
             </div>
-            <nav id="sidebar-nav" class="mt-4 flex flex-col h-full pb-16">
+            <nav id="sidebar-nav" class="mt-4 flex flex-col h-full pb-16 overflow-y-auto">
                 <!-- Nav links will be rendered here by JS -->
                 <div class="mt-auto p-4 border-t border-themed">
                      <button id="logout-btn" class="w-full flex items-center py-2 px-4 rounded-md text-secondary hover:bg-red-600 hover:text-white transition-colors">
@@ -151,7 +154,7 @@
         <!-- Main Content -->
         <div id="main-content" class="flex-1 flex flex-col overflow-hidden lg:main-content-expanded">
             <!-- Header -->
-            <header class="bg-secondary shadow-sm p-4 flex items-center justify-between border-b border-themed">
+            <header class="bg-secondary shadow-sm p-4 flex items-center justify-between border-b border-themed z-20">
                 <div class="flex items-center">
                     <button id="open-sidebar-btn" class="lg:hidden text-primary mr-4">
                         <i data-lucide="menu" class="h-6 w-6"></i>
@@ -171,43 +174,18 @@
             </header>
             
             <!-- Page Content Area -->
-            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-primary p-6">
-                <!-- All pages will be rendered here and toggled -->
-                <!-- Dashboard Page -->
-                <div id="dashboard-page" class="page-content">
-                    <!-- Dashboard content will be rendered by JS -->
-                </div>
-                <!-- Finances Page -->
-                <div id="finances-page" class="page-content hidden">
-                    <!-- Finances content will be rendered by JS -->
-                </div>
-                <!-- Requisitions Page -->
-                <div id="requisitions-page" class="page-content hidden">
-                     <!-- Requisitions content will be rendered by JS -->
-                </div>
-                <!-- Orders Page -->
-                <div id="orders-page" class="page-content hidden">
-                    <!-- Orders content will be rendered by JS -->
-                </div>
-                <!-- Player Roster Page -->
-                <div id="player_roster-page" class="page-content hidden">
-                    <!-- Roster content will be rendered by JS -->
-                </div>
-                <!-- Social Media Page -->
-                <div id="social_media-page" class="page-content hidden">
-                    <!-- Social Media content will be rendered by JS -->
-                </div>
-                <!-- Administration Page -->
-                <div id="administration-page" class="page-content hidden">
-                    <!-- Administration content will be rendered by JS -->
-                </div>
+            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-primary p-6" id="page-container">
+                <!-- Pages will be injected here -->
             </main>
         </div>
     </div>
     
-    <!-- Modals will be injected here by JS -->
-    <div id="modal-container"></div>
+    <!-- Modal Container -->
+    <div id="modal-container" class="fixed inset-0 z-50"></div>
     
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-[60] space-y-2"></div>
+
     <!-- Hidden element for PDF generation -->
     <div id="pdf-receipt-template" class="hidden"></div>
 
@@ -216,8 +194,8 @@
     <script type="module">
         // Firebase Imports
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, onSnapshot, getDoc, setDoc, addDoc, updateDoc, deleteDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, onSnapshot, getDoc, setDoc, addDoc, updateDoc, deleteDoc, query, where, getDocs, Timestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- CONFIGURATION ---
         const firebaseConfig = {
@@ -240,10 +218,9 @@
         // --- APPLICATION STATE ---
         let state = {
             currentUser: null,
-            userProfile: null, // Will hold { uid, email, role, name }
+            userProfile: null,
             currentPage: 'dashboard',
             loading: true,
-            // Firestore data collections
             users: [],
             finances: [],
             requisitions: [],
@@ -256,20 +233,20 @@
         };
         
         // --- DOM ELEMENTS ---
-        const loadingSpinner = document.getElementById('loading-spinner');
+        const pageContainer = document.getElementById('page-container');
         const loginView = document.getElementById('login-view');
         const appView = document.getElementById('app-view');
-        // ... other elements will be selected as needed
+        const loadingSpinner = document.getElementById('loading-spinner');
+        // ... other elements selected as needed
 
-        // --- FIREBASE INITIALIZATION ---
+        // --- INITIALIZATION ---
         let app, auth, db;
         try {
             app = initializeApp(firebaseConfig);
             auth = getAuth(app);
             db = getFirestore(app);
             emailjs.init(emailJSConfig.publicKey);
-        } catch (error)
-{
+        } catch (error) {
             console.error("Initialization failed:", error);
             document.body.innerHTML = `<div class="p-4 bg-red-100 text-red-800">Application failed to initialize. Check console for errors.</div>`;
         }
@@ -300,31 +277,20 @@
             applyTheme(newTheme);
         });
         
-        // Apply saved theme on initial load
         if (userTheme === 'light' || (!userTheme && !systemTheme)) {
             applyTheme('light');
         } else {
             applyTheme('dark');
         }
 
+        // --- AUTH & CORE APP LOGIC ---
+        
+        let unsubscribers = [];
 
-        // --- AUTHENTICATION ---
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                if (!state.userProfile || state.userProfile.uid !== user.uid) {
-                    await fetchUserProfile(user.uid);
-                    setupFirestoreListeners();
-                }
-                state.currentUser = user;
-                showView('app');
-            } else {
-                state.currentUser = null;
-                state.userProfile = null;
-                unsubscribeAllListeners();
-                showView('login');
-            }
-            updateLoading(false);
-        });
+        function unsubscribeAllListeners() {
+            unsubscribers.forEach(unsub => unsub());
+            unsubscribers = [];
+        }
 
         async function fetchUserProfile(uid) {
             try {
@@ -334,19 +300,41 @@
                     state.userProfile = { uid, ...userDocSnap.data() };
                 } else {
                     console.warn("User profile not found in Firestore for UID:", uid);
-                    // This could be a new user, or an error. For now, sign out.
-                    await signOut(auth);
+                    state.userProfile = null;
                 }
             } catch (error) {
                 console.error("Error fetching user profile:", error);
-                await signOut(auth);
+                state.userProfile = null;
             }
         }
-        
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                loadingSpinner.style.display = 'flex';
+                await fetchUserProfile(user.uid);
+                if(state.userProfile) {
+                    setupFirestoreListeners();
+                    state.currentUser = user;
+                    showView('app');
+                } else {
+                    await signOut(auth); // User exists in Auth but not in Firestore 'users' collection
+                    showView('login');
+                    showToast('Access denied. User profile not found.', 'error');
+                }
+            } else {
+                state.currentUser = null;
+                state.userProfile = null;
+                unsubscribeAllListeners();
+                showView('login');
+            }
+            loadingSpinner.style.display = 'none';
+        });
+
+        // --- LOGIN FORM & LOGOUT ---
         const loginForm = document.getElementById('login-form');
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            updateLoading(true);
+            loadingSpinner.style.display = 'flex';
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const loginError = document.getElementById('login-error');
@@ -358,8 +346,8 @@
                 loginError.textContent = "Invalid email or password.";
                 loginError.classList.remove('hidden');
                 console.error("Login failed:", error.message);
-                updateLoading(false);
             }
+            loadingSpinner.style.display = 'none';
         });
 
         const togglePasswordBtn = document.getElementById('toggle-password-visibility');
@@ -377,21 +365,291 @@
             await signOut(auth);
         });
 
+        // --- TEMPLATING / HTML GENERATION ---
+        
+        const pages = {
+            dashboard: `
+                <!-- Dashboard content will be rendered here -->
+            `,
+            finances: `
+                <div class="bg-secondary p-6 rounded-lg shadow border border-themed">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
+                        <h2 class="text-xl font-semibold text-primary">Financial Transactions</h2>
+                        <div id="finances-controls"></div> <!-- Role-based controls here -->
+                    </div>
+                    <div id="finances-summary" class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6"></div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead class="border-b border-themed text-secondary">
+                                <tr>
+                                    <th class="p-2">Date</th>
+                                    <th class="p-2">Description</th>
+                                    <th class="p-2">Type</th>
+                                    <th class="p-2">Amount</th>
+                                    <th class="p-2">Submitted By</th>
+                                    <th class="p-2">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="finances-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            `,
+            requisitions: `
+                <div id="requisitions-content"></div>
+            `,
+            orders: `
+                <div id="orders-content"></div>
+            `,
+            player_roster: `
+                 <div class="bg-secondary p-6 rounded-lg shadow border border-themed">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold text-primary">Player Roster</h2>
+                        <div id="roster-controls"></div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead class="border-b border-themed text-secondary">
+                                <tr>
+                                    <th class="p-2">Name</th>
+                                    <th class="p-2">Jersey #</th>
+                                    <th class="p-2">Position</th>
+                                    <th class="p-2">Contact/Location</th>
+                                    <th id="roster-actions-header" class="p-2">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="roster-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            `,
+            social_media: `
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-secondary p-6 rounded-lg shadow border border-themed" id="social-media-form-container"></div>
+                    <div class="bg-secondary p-6 rounded-lg shadow border border-themed">
+                        <h2 class="text-xl font-semibold text-primary mb-4">Monthly Data Log</h2>
+                        <div class="max-h-96 overflow-y-auto" id="social-media-log"></div>
+                    </div>
+                </div>
+            `,
+            administration: `
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6" id="admin-content"></div>
+            `
+        };
+
         // --- ROLE-BASED ACCESS CONTROL (RBAC) ---
         function hasPermission(requiredRoles) {
             if (!state.userProfile || !state.userProfile.role) return false;
             return requiredRoles.includes(state.userProfile.role);
         }
+        
+        const ROLES = {
+            MANAGE_FINANCES: ['Admin', 'President', 'Treasurer'],
+            MANAGE_USERS: ['Admin'],
+            MANAGE_SEASON: ['Admin', 'President'],
+            MANAGE_ROSTER: ['Captain'],
+            MANAGE_SOCIAL: ['Admin', 'President', 'Social Media Manager'],
+            APPROVE_REQUISITIONS: ['Admin', 'President', 'Treasurer'],
+            MANAGE_ORDERS: ['Admin', 'President', 'Order Handler'],
+            MANAGE_MERCH: ['Admin', 'President'],
+            UPLOAD_PHOTOS: ['Graphics Designer'],
+            SUBMIT_REQUISITIONS: ['Admin', 'President', 'Treasurer', 'Vice President', 'Captain', 'Social Media Manager', 'Graphics Designer', 'Order Handler']
+        };
 
-        // --- UI & RENDERING ---
-        function updateLoading(isLoading) {
-            state.loading = isLoading;
-            loadingSpinner.style.display = isLoading ? 'flex' : 'none';
+        // --- MODAL & TOAST ---
+        
+        function showModal(title, contentHTML, footerHTML) {
+            const modalContainer = document.getElementById('modal-container');
+            const modal = document.createElement('div');
+            modal.className = 'modal active fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4';
+            modal.innerHTML = `
+                <div class="bg-secondary rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] flex flex-col border border-themed">
+                    <header class="flex justify-between items-center p-4 border-b border-themed">
+                        <h2 class="text-xl font-semibold text-primary">${title}</h2>
+                        <button data-action="close-modal" class="text-secondary hover:text-primary">&times;</button>
+                    </header>
+                    <main class="p-6 overflow-y-auto">${contentHTML}</main>
+                    <footer class="p-4 bg-primary border-t border-themed flex justify-end gap-2">${footerHTML}</footer>
+                </div>
+            `;
+            modalContainer.appendChild(modal);
         }
 
+        function closeModal() {
+            const modal = document.querySelector('.modal');
+            if(modal) modal.remove();
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const colors = {
+                success: 'bg-green-600',
+                error: 'bg-red-600',
+                info: 'bg-blue-600'
+            };
+            toast.className = `text-white px-6 py-3 rounded-lg shadow-lg ${colors[type]} animate-pulse`; // Simple animation
+            toast.textContent = message;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // --- DATA FETCHING & LISTENERS ---
+        function setupFirestoreListeners() {
+            unsubscribeAllListeners();
+            
+            const collectionsToListen = [
+                'users', 'finances', 'requisitions', 'orders', 'merchandise', 
+                'players', 'socialMedia', 'dashboardImages'
+            ];
+            
+            collectionsToListen.forEach(collectionName => {
+                const q = query(collection(db, collectionName));
+                const unsub = onSnapshot(q, (snapshot) => {
+                    state[collectionName] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    if (state.currentPage) renderCurrentPage();
+                }, (error) => console.error(`Error fetching ${collectionName}:`, error));
+                unsubscribers.push(unsub);
+            });
+
+            const unsubSettings = onSnapshot(doc(db, 'settings', 'main'), (doc) => {
+                state.settings = doc.exists() ? doc.data() : { seasonStartDate: '', seasonWeeks: 16 };
+                if (state.currentPage) renderCurrentPage();
+            }, (error) => console.error("Error fetching settings:", error));
+            unsubscribers.push(unsubSettings);
+        }
+        
+        // --- EVENT DELEGATION ---
+        document.body.addEventListener('click', (e) => {
+            const target = e.target.closest('[data-action]');
+            if (!target) return;
+
+            const { action, id } = target.dataset;
+
+            switch (action) {
+                case 'close-modal':
+                    closeModal();
+                    break;
+                // Add more generic actions here if needed
+                case 'save-user':
+                    // This is just an example, specific save handlers will be in page renderers
+                    break;
+            }
+        });
+        
+        // --- PAGE RENDER FUNCTIONS ---
+        // These now populate the real content for each page
+        // We define them on the window object so renderCurrentPage can call them dynamically
+        window.renderDashboard = () => {
+            const totalInflow = state.finances.filter(t => t.type === 'Inflow').reduce((sum, t) => sum + t.amount, 0);
+            const totalOutflow = state.finances.filter(t => t.type === 'Outflow').reduce((sum, t) => sum + t.amount, 0);
+            const pendingRequisitions = state.requisitions.filter(r => r.status === 'Pending').length;
+
+            // Very basic season progress calculation
+            let seasonProgress = 'Not Started';
+            if (state.settings.seasonStartDate && state.settings.seasonWeeks > 0) {
+                const startDate = new Date(state.settings.seasonStartDate);
+                const today = new Date();
+                const weeksPassed = Math.floor((today - startDate) / (1000 * 60 * 60 * 24 * 7));
+                if (weeksPassed >= 0 && weeksPassed < state.settings.seasonWeeks) {
+                    seasonProgress = `Week ${weeksPassed + 1} of ${state.settings.seasonWeeks}`;
+                } else if (weeksPassed >= state.settings.seasonWeeks) {
+                    seasonProgress = 'Finished';
+                }
+            }
+            
+            pageContainer.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-secondary p-6 rounded-lg shadow border border-themed"><h3 class="font-semibold text-primary">Total Inflow</h3><p class="text-2xl font-bold text-green-500">${formatCurrency(totalInflow)}</p></div>
+                    <div class="bg-secondary p-6 rounded-lg shadow border border-themed"><h3 class="font-semibold text-primary">Total Outflow</h3><p class="text-2xl font-bold text-red-500">${formatCurrency(totalOutflow)}</p></div>
+                    <div class="bg-secondary p-6 rounded-lg shadow border border-themed"><h3 class="font-semibold text-primary">Season Progress</h3><p class="text-2xl font-bold text-primary">${seasonProgress}</p></div>
+                    <div class="bg-secondary p-6 rounded-lg shadow border border-themed"><h3 class="font-semibold text-primary">Pending Requisitions</h3><p class="text-2xl font-bold text-primary">${pendingRequisitions}</p></div>
+                </div>
+                <div class="mt-8 grid grid-cols-1 lg:grid-cols-5 gap-6">
+                    <div class="lg:col-span-3 bg-secondary p-6 rounded-lg shadow border border-themed">
+                        <h3 class="text-lg font-semibold mb-4 text-primary">Social Media Engagement</h3>
+                        <canvas id="socialMediaChart"></canvas>
+                    </div>
+                    <div class="lg:col-span-2 bg-secondary p-6 rounded-lg shadow border border-themed">
+                         <h3 class="text-lg font-semibold mb-4 text-primary">Upcoming Events / Photos</h3>
+                         <!-- Photo uploader for Graphics Designer would go here -->
+                    </div>
+                </div>
+            `;
+
+            // Example Chart.js implementation
+            const ctx = document.getElementById('socialMediaChart');
+            if(ctx) {
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], // These would come from state.socialMedia
+                        datasets: [{
+                            label: 'Total Engagements',
+                            data: [120, 190, 300, 500, 200, 350], // Dummy data
+                            backgroundColor: 'rgba(212, 175, 55, 0.6)', // Gold with opacity
+                            borderColor: 'rgba(212, 175, 55, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: { scales: { y: { beginAtZero: true } } }
+                });
+            }
+        };
+
+        window.renderFinances = () => {
+            // Re-render the static part first
+            pageContainer.innerHTML = pages.finances;
+
+            // Populate dynamic parts
+            const controlsContainer = document.getElementById('finances-controls');
+            if (hasPermission(ROLES.MANAGE_FINANCES)) {
+                controlsContainer.innerHTML = `
+                    <button data-action="show-add-transaction" class="bg-accent text-white px-4 py-2 rounded-lg bg-accent-hover">Add Transaction</button>
+                `;
+            }
+
+            const summaryContainer = document.getElementById('finances-summary');
+            const totalInflow = state.finances.filter(t => t.type === 'Inflow').reduce((sum, t) => sum + t.amount, 0);
+            const totalOutflow = state.finances.filter(t => t.type === 'Outflow').reduce((sum, t) => sum + t.amount, 0);
+            const netBalance = totalInflow - totalOutflow;
+            summaryContainer.innerHTML = `
+                <div class="bg-primary p-4 rounded-lg"><h4 class="text-sm text-secondary">Total Inflow</h4><p class="text-lg font-bold text-green-500">${formatCurrency(totalInflow)}</p></div>
+                <div class="bg-primary p-4 rounded-lg"><h4 class="text-sm text-secondary">Total Outflow</h4><p class="text-lg font-bold text-red-500">${formatCurrency(totalOutflow)}</p></div>
+                <div class="bg-primary p-4 rounded-lg"><h4 class="text-sm text-secondary">Net Balance</h4><p class="text-lg font-bold ${netBalance >= 0 ? 'text-green-500' : 'text-red-500'}">${formatCurrency(netBalance)}</p></div>
+            `;
+            
+            const tableBody = document.getElementById('finances-table-body');
+            tableBody.innerHTML = state.finances.sort((a,b) => b.date.toMillis() - a.date.toMillis()).map(t => `
+                <tr class="border-b border-themed">
+                    <td class="p-2">${formatDate(t.date)}</td>
+                    <td class="p-2">${t.description}</td>
+                    <td class="p-2">
+                        <span class="px-2 py-1 rounded-full text-xs ${t.type === 'Inflow' ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'}">${t.type}</span>
+                    </td>
+                    <td class="p-2 ${t.type === 'Inflow' ? 'text-green-500' : 'text-red-500'}">${formatCurrency(t.amount)}</td>
+                    <td class="p-2">${state.users.find(u => u.uid === t.submittedBy)?.name || 'Unknown'}</td>
+                    <td class="p-2">
+                        <!-- Actions like edit/delete would go here -->
+                    </td>
+                </tr>
+            `).join('');
+        };
+        // Add stubs for other render functions to avoid errors
+        window.renderRequisitions = () => { pageContainer.innerHTML = pages.requisitions; };
+        window.renderOrders = () => { pageContainer.innerHTML = pages.orders; };
+        window.renderPlayer_roster = () => { pageContainer.innerHTML = pages.player_roster; };
+        window.renderSocial_media = () => { pageContainer.innerHTML = pages.social_media; };
+        window.renderAdministration = () => { pageContainer.innerHTML = pages.administration; };
+
+
+        // --- MAIN APP RENDER & ROUTING ---
         function showView(viewName) {
             loginView.style.display = 'none';
             appView.style.display = 'none';
+
             if (viewName === 'login') {
                 loginView.style.display = 'flex';
             } else if (viewName === 'app') {
@@ -399,15 +657,15 @@
                 renderApp();
             }
         }
-        
-        // This is the main render function, called when state changes
+
         function renderApp() {
             if (!state.userProfile) return;
             renderSidebar();
             renderHeader();
             renderCurrentPage();
+            lucide.createIcons();
         }
-
+        
         function renderSidebar() {
             const nav = document.getElementById('sidebar-nav');
             const role = state.userProfile.role;
@@ -425,142 +683,56 @@
             navLinks.forEach(link => {
                 if (link.roles.includes(role)) {
                     const isActive = state.currentPage === link.id ? 'active' : '';
-                    const linkTextColor = document.documentElement.hasAttribute('data-theme') ? 'text-slate-700' : 'text-slate-300';
+                    const linkTextColor = document.documentElement.hasAttribute('data-theme') ? 'text-slate-600' : 'text-slate-300';
                     html += `
-                        <a href="#${link.id}" class="sidebar-link ${isActive} flex items-center py-3 px-4 rounded-md ${linkTextColor} hover:bg-slate-700 hover:text-white transition-colors mx-2 my-1">
+                        <a href="#${link.id}" class="sidebar-link ${isActive} flex items-center py-3 px-4 rounded-md ${linkTextColor} hover:bg-accent hover:text-white transition-colors mx-2 my-1">
                             <i data-lucide="${link.icon}" class="h-5 w-5 mr-3"></i> ${link.text}
                         </a>`;
                 }
             });
-            // This is a simplified way to render. A more robust app would use a library or more complex diffing.
-            const currentHTML = nav.innerHTML.split('<div class="mt-auto')[0]; // only compare links
-            if (currentHTML !== html) {
-                 nav.innerHTML = html + nav.innerHTML.substring(nav.innerHTML.indexOf('<div class="mt-auto'));
-            }
-            lucide.createIcons();
+            const logoutButtonHTML = nav.querySelector('.mt-auto').outerHTML;
+            nav.innerHTML = html + logoutButtonHTML;
         }
-        
+
         function renderHeader() {
-            document.getElementById('page-title').textContent = state.currentPage.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+            document.getElementById('page-title').textContent = state.currentPage.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
             const userDisplay = document.getElementById('current-user-display');
             userDisplay.querySelector('p:first-child').textContent = state.userProfile.name || 'No Name';
             userDisplay.querySelector('p:last-child').textContent = state.userProfile.role;
         }
-        
+
         function renderCurrentPage() {
-            document.querySelectorAll('.page-content').forEach(p => p.classList.add('hidden'));
-            const currentPageElement = document.getElementById(`${state.currentPage}-page`);
-            if (currentPageElement) {
-                currentPageElement.classList.remove('hidden');
-                // Call the specific render function for the active page
-                const renderFunctionName = `render${state.currentPage.charAt(0).toUpperCase() + state.currentPage.slice(1).replace(/_(\w)/g, (match, p1) => p1.toUpperCase())}`;
-                if (window[renderFunctionName] && typeof window[renderFunctionName] === 'function') {
-                    window[renderFunctionName](currentPageElement);
-                } else {
-                    currentPageElement.innerHTML = `<h2 class="text-2xl">Welcome to the ${state.currentPage} page.</h2><p>Content coming soon.</p>`;
-                }
-            } else {
-                 document.getElementById('dashboard-page').classList.remove('hidden');
-                 renderDashboard(document.getElementById('dashboard-page'));
+            const pageHTML = pages[state.currentPage] || `<p>Page not found.</p>`;
+            pageContainer.innerHTML = pageHTML;
+
+            const renderFunctionName = `render${state.currentPage.charAt(0).toUpperCase() + state.currentPage.slice(1).replace(/_(\w)/g, (match, p1) => p1.toUpperCase())}`;
+            if (window[renderFunctionName] && typeof window[renderFunctionName] === 'function') {
+                window[renderFunctionName]();
             }
+            lucide.createIcons();
         }
         
-        // --- PAGE-SPECIFIC RENDER FUNCTIONS ---
-        // We will define these globally so they can be called by renderCurrentPage
-        window.renderDashboard = (container) => {
-            // Placeholder for charts and widgets
-            container.innerHTML = `
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div class="bg-secondary p-6 rounded-lg shadow border border-themed"><h3 class="font-semibold text-primary">Total Inflow</h3><p class="text-2xl font-bold text-green-500">--</p></div>
-                    <div class="bg-secondary p-6 rounded-lg shadow border border-themed"><h3 class="font-semibold text-primary">Total Outflow</h3><p class="text-2xl font-bold text-red-500">--</p></div>
-                    <div class="bg-secondary p-6 rounded-lg shadow border border-themed"><h3 class="font-semibold text-primary">Season Progress</h3><p class="text-2xl font-bold text-primary">--</p></div>
-                    <div class="bg-secondary p-6 rounded-lg shadow border border-themed"><h3 class="font-semibold text-primary">Pending Requisitions</h3><p class="text-2xl font-bold text-primary">--</p></div>
-                </div>
-                <div class="mt-8 grid grid-cols-1 lg:grid-cols-5 gap-6">
-                    <div class="lg:col-span-3 bg-secondary p-6 rounded-lg shadow border border-themed">
-                        <h3 class="text-lg font-semibold mb-4 text-primary">Social Media Engagement</h3>
-                        <canvas id="socialMediaChart"></canvas>
-                    </div>
-                    <div class="lg:col-span-2 bg-secondary p-6 rounded-lg shadow border border-themed">
-                         <h3 class="text-lg font-semibold mb-4 text-primary">Upcoming Events / Photos</h3>
-                         <!-- Photo uploader for Graphics Designer -->
-                    </div>
-                </div>
-            `;
-            // Chart.js rendering logic would go here
-        };
-
-        window.renderFinances = (container) => {
-             container.innerHTML = `
-                <div class="bg-secondary p-6 rounded-lg shadow border border-themed">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-xl font-semibold text-primary">Financial Transactions</h2>
-                        <button class="bg-accent text-white px-4 py-2 rounded-lg bg-accent-hover">Add Transaction</button>
-                    </div>
-                    <!-- Transaction table will be rendered here -->
-                </div>
-            `;
-        }
-        
-        // ... Other page renderers would follow a similar pattern ...
-
-
-        // --- FIRESTORE LISTENERS ---
-        let unsubscribers = [];
-
-        function setupFirestoreListeners() {
-            unsubscribeAllListeners();
-            
-            const collectionsToListen = [
-                'users', 'finances', 'requisitions', 'orders', 'merchandise', 
-                'players', 'socialMedia', 'dashboardImages'
-            ];
-            
-            collectionsToListen.forEach(collectionName => {
-                const unsub = onSnapshot(collection(db, collectionName), (snapshot) => {
-                    state[collectionName] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    renderApp(); // Re-render on data change
-                }, (error) => console.error(`Error fetching ${collectionName}:`, error));
-                unsubscribers.push(unsub);
-            });
-
-            // Listener for single document (settings)
-            const unsubSettings = onSnapshot(doc(db, 'settings', 'main'), (doc) => {
-                if (doc.exists()) {
-                    state.settings = doc.data();
-                }
-                renderApp();
-            }, (error) => console.error("Error fetching settings:", error));
-            unsubscribers.push(unsubSettings);
-        }
-
-        function unsubscribeAllListeners() {
-            unsubscribers.forEach(unsub => unsub());
-            unsubscribers = [];
-        }
-
-        // --- ROUTING ---
         function handleRouteChange() {
             const hash = window.location.hash.substring(1) || 'dashboard';
             state.currentPage = hash;
             renderApp();
         }
-        
         window.addEventListener('hashchange', handleRouteChange);
         window.addEventListener('load', handleRouteChange);
         
-        // --- EVENT DELEGATION FOR DYNAMIC CONTENT ---
-        document.body.addEventListener('click', (e) => {
-            const action = e.target.closest('[data-action]');
-            if (!action) return;
-
-            // Example of handling actions
-            if (action.dataset.action === 'open-add-transaction-modal') {
-                // open a modal
-            }
-        });
-
         // --- UTILITY FUNCTIONS ---
+        function formatDate(timestamp) {
+            if (!timestamp) return 'N/A';
+            return timestamp.toDate().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'UGX' }).format(amount || 0);
+        }
+        
+        // --- FINAL INITIALIZATION ---
+        lucide.createIcons();
+
         // Sidebar toggle for mobile
         document.getElementById('open-sidebar-btn').addEventListener('click', () => {
             document.getElementById('sidebar').classList.remove('-translate-x-full');
@@ -573,15 +745,11 @@
                  sidebar.classList.add('-translate-x-full');
             }
              // Also close on nav link click for mobile
-            if (navContainer.contains(e.target) && window.innerWidth < 1024) {
+            if (navContainer.contains(e.target.closest('a')) && window.innerWidth < 1024) {
                  sidebar.classList.add('-translate-x-full');
             }
         });
-
-        // Initialize Lucide icons on load
-        lucide.createIcons();
     </script>
 </body>
 </html>
-
 
