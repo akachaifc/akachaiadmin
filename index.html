@@ -91,9 +91,9 @@
     <!-- Login/Signup Section --><section id="auth-section" class="flex items-center justify-center min-h-screen p-4">
         <div class="bg-card p-8 rounded-lg shadow-lg w-full max-w-md border border-theme">
              <img src="https://i.ibb.co/x8KnbRxQ/1000324643-92de31910003d42fc3ade892f8059b77-8-7-2025-1-30-00-PM-removebg-preview.png" alt="AKACHAI FC Logo" class="h-20 w-20 mx-auto mb-4 object-contain">
-            <h1 class="text-3xl font-bold text-center gold-text mb-6">AKACHAI ADMIN PORTAL</h1>
+            <h1 id="auth-title" class="text-3xl font-bold text-center gold-text mb-6">AKACHAI ADMIN PORTAL</h1>
             <div id="auth-container">
-                <!-- This will be populated by JS for login, signup, or link completion -->
+                <!-- This will be populated by JS for login, signup -->
             </div>
             <p id="auth-error" class="text-red-500 text-center mt-4"></p>
         </div>
@@ -720,8 +720,10 @@
         // --- AUTHENTICATION FLOW ---
         const authContainer = document.getElementById('auth-container');
         const authError = document.getElementById('auth-error');
+        const authTitle = document.getElementById('auth-title');
 
         function renderLoginForm() {
+            authTitle.textContent = 'AKACHAI ADMIN PORTAL';
             authContainer.innerHTML = `
                 <form id="login-form">
                     <div class="mb-4">
@@ -742,8 +744,9 @@
         }
         
         function renderCompleteSignupForm(email) {
+             authTitle.textContent = 'Complete Your Account';
              authContainer.innerHTML = `
-                <p class="text-center mb-4">Complete your sign-up for <strong>${email}</strong>.</p>
+                <p class="text-center mb-4">Welcome! Please create a password for <strong>${email}</strong>.</p>
                 <form id="complete-signup-form">
                     <div class="mb-4 relative">
                         <label for="signup-password" class="block text-sm font-medium mb-2">Choose a Password</label>
@@ -765,12 +768,9 @@
                 if (email) {
                     try {
                         showLoader();
-                        const result = await signInWithEmailLink(auth, email, window.location.href);
+                        await signInWithEmailLink(auth, email, window.location.href);
                         window.localStorage.removeItem('emailForSignIn');
-                        // If user is new (no password set), prompt to set one
-                        if (result.user.metadata.creationTime === result.user.metadata.lastSignInTime) {
-                           renderCompleteSignupForm(email);
-                        }
+                        // The onAuthStateChanged listener will now handle everything.
                     } catch (error) {
                         authError.textContent = error.message;
                         renderLoginForm();
@@ -799,6 +799,7 @@
                     if (auth.currentUser) {
                         await updatePassword(auth.currentUser, password);
                         showToast("Password set successfully! Welcome.");
+                         // onAuthStateChanged will re-evaluate and load the app.
                     } else {
                         throw new Error("No active user session to update.");
                     }
@@ -839,6 +840,15 @@
             const appSection = document.getElementById('app-section');
 
             if (user) {
+                // Check if user has a password. If not, they just came from an email link and need to set one.
+                const hasPassword = user.providerData.some(provider => provider.providerId === 'password');
+                if (!hasPassword) {
+                    renderCompleteSignupForm(user.email);
+                    authSection.classList.remove('hidden');
+                    appSection.classList.add('hidden');
+                    return;
+                }
+
                 document.addEventListener('mousemove', resetInactivityTimer);
                 document.addEventListener('keydown', resetInactivityTimer);
                 document.addEventListener('click', resetInactivityTimer);
